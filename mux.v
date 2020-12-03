@@ -43,7 +43,14 @@ module mux #(
 		input [D_WIDTH - 1 : 0]		data2_i,	// ZigZag Dec. Output Data
 		input						valid2_i,	// ZigZag Dec. Output Enable
 	);
-	
-	//TODO: Implement MUX logic here
+	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
+	//	Everythin happens on the positive edge of the [clk] signal		//
+	//																	//
+	//	if [validX_i] is HIGH, where X is given by the [select] signal:	//
+	//		store the [dataX_i] in a variable							//
+	//	if [stored_data] is not null and [validX_i] is LOW				//
+	//		set [valid_o] to HIGH										//
+	//		set [data_o] to [stored_data]								//
+	//////////////////////////////////////////////////////////////////////
 
 endmodule

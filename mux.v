@@ -48,9 +48,10 @@ module mux #(
 	//																	//
 	//	if [validX_i] is HIGH, where X is given by the [select] signal:	//
 	//		store the [dataX_i] in a variable							//
-	//	if [stored_data] is not null and [validX_i] is LOW				//
+	//	if [validX_i] is HIGH and [valid_o] is LOW						//
 	//		set [valid_o] to HIGH										//
-	//		set [data_o] to [stored_data]								//
+	//	if [validX_i] is LOW and [valid_o] is HIGH						//
+	//		set [valid_o] to LOW										//
 	//////////////////////////////////////////////////////////////////////
 
 	

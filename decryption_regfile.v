@@ -18,6 +18,7 @@
 // Revision:
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
+// Revision 0.03 - General Logic Explained in Comments
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -44,7 +45,21 @@ module decryption_regfile #(
 			output reg[reg_width - 1 : 0] scytale_key,
 			output reg[reg_width - 1 : 0] zigzag_key
 	);
-
-// TODO implementati bancul de registre.
+	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
+	//	Everything happens on the positive edge of the [clk] signal		//
+	//																	//
+	//	if [addr] is valid:												//
+	//		if [read] is HIGH:											//
+	//			set [rdata] to the contents of the block at [addr]		//
+	//			set [done] to HIGH										//
+	//		if [write] is HIGH:											//
+	//			set the contents of the block at [add] to [wdata]		//
+	//			set [done] to HIGH on the next clock					//
+	//		set [error] to LOW											//
+	//	else															//
+	//		set [error] to HIGH											//
+	//		set [done] to HIGH											//
+	//////////////////////////////////////////////////////////////////////
+	
 	
 endmodule

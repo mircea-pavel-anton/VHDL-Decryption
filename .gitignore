@@ -1,7 +1,7 @@
 # Ignore all tester files
 start_test.bat
-results.log
-results.txt
+*.log
+*.txt
 build/*
 scripts/*
 tester/*

@@ -19,6 +19,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - General Logic Explained in Comments
 // Revision 0.04 - First attempt at an implementation
+// Revision 0.05 - Bug fixes: binary syntax was wrong: 2b'00 instead of 2'b00
 //////////////////////////////////////////////////////////////////////////////////
 
 module demux #(
@@ -79,9 +80,9 @@ module demux #(
 	end
 
 	always @(posedge clk_sys) begin
-		if (!valid_i && !rst_n && stored_data != 0 && packet_counter < d'4) begin
+		if (!valid_i && !rst_n && stored_data != 0 && packet_counter < 3'd4) begin
 			case (select)
-				2b'00: begin // select = 0
+				2'b00: begin // select = 0
 					// Set the correct output data and enable
 					data0_o <= stored_data[8*packet_counter +: 8];
 					valid0_o <= 1;
@@ -93,7 +94,7 @@ module demux #(
 					valid2_o <= 0;
 				end
 				
-				2b'01: begin // select = 1
+				2'b01: begin // select = 1
 					// Set the correct output data and enable
 					data1_o <= stored_data[8*packet_counter +: 8];
 					valid1_o <= 1;
@@ -105,7 +106,7 @@ module demux #(
 					valid2_o <= 0;
 				end
 
-				2b'10: begin // select = 2
+				2'b10: begin // select = 2
 					// Set the correct output data and enable
 					data2_o <= stored_data[8*packet_counter +: 8];
 					valid2_o <= 1;
@@ -118,7 +119,7 @@ module demux #(
 				end
 				 
 				// It shouldn't reach this case, but for safe measure, we'll implement it
-				2b'11: begin
+				2'b11: begin
 					// Disable all outs
 					data0_o <= 0;
 					data1_o <= 0;
@@ -129,10 +130,10 @@ module demux #(
 				end
 			endcase
 
-			packet_counter <= packet_counter + 1b'1;
+			packet_counter <= packet_counter + 3'b001;
 		end
 
-		if (packet_counter > d'3) begin
+		if (packet_counter > 3'd3) begin
 			// The 4 packets have been sent. Disable all outs
 			data0_o <= 0;
 			data1_o <= 0;

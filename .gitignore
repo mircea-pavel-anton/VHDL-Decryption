@@ -1,0 +1,8 @@
+# Ignore all tester files
+start_test.bat
+results.log
+results.txt
+build/*
+scripts/*
+tester/*
+tests/*

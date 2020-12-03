@@ -53,4 +53,59 @@ module mux #(
 	//		set [data_o] to [stored_data]								//
 	//////////////////////////////////////////////////////////////////////
 
+	
+	output reg [D_WIDTH - 1 : 0]	stored_data;
+	output reg						valid_sig;
+
+	always @(posedge clk) begin
+		// If the reset signal is HIGH, disable all outs
+		if (rst_n) begin
+			stored_data <= 0;
+			valid_sig <= 0;
+		end else begin // if reset is LOW
+			case (select)
+				2b'00: begin
+					// This statement handles the 'first' clock cycle, starting
+					// the count when the [validX_i] gets HIGH.
+					// What happens here is that the ternary operator assigns
+					// the value of [dataX_i] to [stored_data] when [validX_i]
+					// is HIGH, and 0 otherwise
+					stored_data <= (valid0_i == 1) ? data0_i : 0;
+
+					// This statement handles the 'second' and 'third' 
+					// clock cycles, starting the count when the [validX_i]
+					// gets HIGH.
+					// What happens here is that the ternary operator assigns
+					// the boolean value of evaluating the expression
+					// (valid0_i == 1 && valid_sig == 0) to valid_sig
+					// What this basically does is that when [validX_i] gets
+					// HIGH and [valid_sig] is LOW, it toggles it from
+					// LOW to HIGH and then back from HIGH to LOW in
+					// 2 clock cycles
+					valid_sig <= (valid0_i == 1 && valid_sig == 0);
+				end
+				
+				2b'01: begin // see comments above
+					stored_data <= (valid1_i == 1) ? data1_i : 0;
+					valid_sig <= (valid1_i == 1 && valid_sig == 0);
+				end
+				
+				2b'10: begin // see comments above
+					stored_data <= (valid2_i == 1) ? data2_i : 0;
+					valid_sig <= (valid2_i == 1 && valid_sig == 0);
+				end
+				
+				// The [select] signal should never reach this case, but we're
+				// implementing it just to be safe.
+				// If [select] has an invalid value, then disable all outs
+				2b'11: begin
+					data_o <= 0;
+					valid_o <= 0;
+				end
+			endcase
+		end
+	end
+	
+	assign data_o = stored_data;
+	assign valid_o = valid_sig;
 endmodule

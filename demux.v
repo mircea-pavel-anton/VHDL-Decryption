@@ -18,7 +18,7 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - General Logic Explained in Comments
-//
+// Revision 0.04 - First attempt at an implementation
 //////////////////////////////////////////////////////////////////////////////////
 
 module demux #(
@@ -61,5 +61,85 @@ module demux #(
 	//	?? Reset pin functionality ??									//
 	//////////////////////////////////////////////////////////////////////
 	
+	reg [MST_DWIDTH - 1 : 0] stored_data;
+	reg [3 : 0] packet_counter;
 
+	always @(posedge clk_mst) begin
+		if (valid_i && !rst_n) begin
+			stored_data <= data_i;
+			packet_counter <= 0;
+		end
+		// if an else statement was implemented, stored_data would have been set to 0 
+		// if valid_i is LOW, and we don't want that. We want stored_data to be 0 
+		// only when the reset signal is HIGH. As such, another if statement is used
+		if (rst_n) begin
+			stored_data <= 0;
+			packet_counter <= 0;
+		end
+	end
+
+	always @(posedge clk_sys) begin
+		if (!valid_i && !rst_n && stored_data != 0 && packet_counter < d'4) begin
+			case (select)
+				2b'00: begin // select = 0
+					// Set the correct output data and enable
+					data0_o <= stored_data[8*packet_counter +: 8];
+					valid0_o <= 1;
+
+					// Disable the other outputs
+					data1_o <= 0;
+					data2_o <= 0;
+					valid1_o <= 0;
+					valid2_o <= 0;
+				end
+				
+				2b'01: begin // select = 1
+					// Set the correct output data and enable
+					data1_o <= stored_data[8*packet_counter +: 8];
+					valid1_o <= 1;
+
+					// Disable the other outputs
+					data0_o <= 0;
+					data2_o <= 0;
+					valid0_o <= 0;
+					valid2_o <= 0;
+				end
+
+				2b'10: begin // select = 2
+					// Set the correct output data and enable
+					data2_o <= stored_data[8*packet_counter +: 8];
+					valid2_o <= 1;
+
+					// Disable the other outputs
+					data0_o <= 0;
+					data1_o <= 0;
+					valid0_o <= 0;
+					valid1_o <= 0;
+				end
+				 
+				// It shouldn't reach this case, but for safe measure, we'll implement it
+				2b'11: begin
+					// Disable all outs
+					data0_o <= 0;
+					data1_o <= 0;
+					data2_o <= 0;
+					valid0_o <= 0;
+					valid1_o <= 0;
+					valid2_o <= 0;
+				end
+			endcase
+
+			packet_counter <= packet_counter + 1b'1;
+		end
+
+		if (packet_counter > d'3) begin
+			// The 4 packets have been sent. Disable all outs
+			data0_o <= 0;
+			data1_o <= 0;
+			data2_o <= 0;
+			valid0_o <= 0;
+			valid1_o <= 0;
+			valid2_o <= 0;
+		end
+	end
 endmodule

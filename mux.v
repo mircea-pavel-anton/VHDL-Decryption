@@ -5,7 +5,7 @@
 // 
 // Create Date:		23:12:00 11/23/2020 
 // Design Name:
-// Module Name:		demux
+// Module Name:		mux
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
 // Tool versions:	N/A

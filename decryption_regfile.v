@@ -19,6 +19,7 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - General Logic Explained in Comments
+// Revision 0.04 - First attempt at an implementation
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -39,11 +40,11 @@ module decryption_regfile #(
 			output reg						error, // 'bool' value to indicate errors
 			
 			// Output wires
-			output reg[reg_width - 1 : 0] select,	// The signal that will be 
+			output reg [reg_width - 1 : 0] select,	// The signal that will be 
 													//sent to the MUX & DEMUX blocks
-			output reg[reg_width - 1 : 0] caesar_key,
-			output reg[reg_width - 1 : 0] scytale_key,
-			output reg[reg_width - 1 : 0] zigzag_key
+			output reg [reg_width - 1 : 0] caesar_key,
+			output reg [reg_width - 1 : 0] scytale_key,
+			output reg [reg_width - 1 : 0] zigzag_key
 	);
 	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
 	//	Everything happens on the positive edge of the [clk] signal		//
@@ -61,5 +62,51 @@ module decryption_regfile #(
 	//		set [done] to HIGH											//
 	//////////////////////////////////////////////////////////////////////
 	
-	
+	always @(posedge clk) begin
+		if (rst_n) begin
+			rdata <= 0;
+			done <= 0;
+			error <= 0;
+			select <= 0;
+			caesar_key <= 0;
+			scytale_key <= 0;
+			zigzag_key <= 0;
+		end else begin
+			case (addr)
+				8'h00: begin// select_register
+					rdata <= (read == 1)   ? select : 0;
+					select <= (write == 1) ? wdata  : select;
+					error <= 0;
+				end
+
+				8'h10: begin // Caesar key register
+					rdata <= (read == 1)		? caesar_key : 0;
+					caesar_key <= (write == 1)  ? wdata		 : caesar_key;
+					error <= 0;
+				end
+
+				8'h12: begin // Scytale key register
+					rdata <= (read == 1) 		? scytale_key : 0;
+					scytale_key <= (write == 1) ? wdata 	  : scytale_key;
+					error <= 0;
+				end
+
+				8'h14: begin // ZigZag key register
+					rdata <= (read == 1) 		? zigzag_key : 0;
+					zigzag_key <= (write == 1)  ? wdata 	 : zigzag_key;
+					error <= 0;
+				end
+
+				default: begin// Any invalid addr goes here
+					error <= 1;
+					rdata <= 0;
+					select <= 16'h0;
+					caesar_key <= 16'h0;
+					scytale_key <= 16'hFFFF;
+					zigzag_key <= 16'h2;
+				end
+			endcase
+			done <= read || write;
+		end
+	end
 endmodule

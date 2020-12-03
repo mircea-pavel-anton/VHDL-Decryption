@@ -9,13 +9,15 @@
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
 // Tool versions:	N/A
-// Description:		Demux block that handles routing the encrypted input message to the correct decryptor block.
+// Description:		Demux block that handles routing the encrypted input
+//					message to the correct decryptor block.
 //
 // Dependencies:	N/A
 //
 // Revision:
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
+// Revision 0.03 - General Logic Explained in Comments
 //
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -32,7 +34,7 @@ module demux #(
 		input[1:0] select,
 		
 		// Input interface
-		input [MST_DWIDTH -1 : 0]			data_i,		// Encrypted Message
+		input [MST_DWIDTH - 1 : 0]			data_i,		// Encrypted Message
 		input								valid_i,	// Enable Signal
 		
 		//output interfaces
@@ -44,10 +46,20 @@ module demux #(
 		
 		output reg [SYS_DWIDTH - 1 : 0]		data2_o,	// ZigZag Dec. Output
 		output reg							valid2_o	// ZigZag Dec. Enable
-    );
-	
-	
-	// TODO: Implement DEMUX logic
+	);
+	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
+	//	On the positive edge of [master_clock]:							//
+	//		if the input is enabled ([valid_i] is HIGH):				//
+	//			store [data_i] into a variable (32 bits)				//
+	//																	//
+	//	On the positive edge of [system_clock]:							//
+	//		if the input is disabled AND the stored data is not null:	//
+	//			send an 8bit packet to the apropriate output			//
+	//			set the apropriate output-enable signal to HIGH			//
+	//			set the other output-enable signals to LOW				//
+	//			make sure to only do this for 4 clock cycles			//
+	//	?? Reset pin functionality ??									//
+	//////////////////////////////////////////////////////////////////////
 	
 
 endmodule

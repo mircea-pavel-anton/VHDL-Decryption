@@ -20,6 +20,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - General Logic Explained in Comments
 // Revision 0.04 - First attempt at an implementation
+// Revision 0.05 - Bug fix: Wrong values for *key signals when rst is HIGH
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -67,10 +68,10 @@ module decryption_regfile #(
 			rdata <= 0;
 			done <= 0;
 			error <= 0;
-			select <= 0;
-			caesar_key <= 0;
-			scytale_key <= 0;
-			zigzag_key <= 0;
+			select <= 16'h0;
+			caesar_key <= 16'h0;
+			scytale_key <= 16'hFFFF;
+			zigzag_key <= 16'h2;
 		end else begin
 			case (addr)
 				8'h00: begin// select_register

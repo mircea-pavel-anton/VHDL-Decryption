@@ -141,5 +141,15 @@ module demux #(
 			valid1_o <= 0;
 			valid2_o <= 0;
 		end
+
+		if (rst_n) begin
+			// Disable all outs
+			data0_o <= 0;
+			data1_o <= 0;
+			data2_o <= 0;
+			valid0_o <= 0;
+			valid1_o <= 0;
+			valid2_o <= 0;
+		end
 	end
 endmodule

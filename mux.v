@@ -8,7 +8,7 @@
 // Module Name:		mux
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
-// Tool versions:	N/A
+// Tool versions:	14.5
 // Description:		Mux block that routes the decrypted message from a decryptor 
 //					block to the output of the system
 //

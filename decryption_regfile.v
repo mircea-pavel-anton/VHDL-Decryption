@@ -8,7 +8,7 @@
 // Module Name:		Register Bank
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
-// Tool versions:	N/A
+// Tool versions:	14.5
 // Description:		This block is responsible for handling the input data from the outside.
 //					It stores the keys for the cyphers and sends the select signals to the
 //					*MUX blocks

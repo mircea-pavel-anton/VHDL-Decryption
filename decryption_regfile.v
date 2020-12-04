@@ -26,6 +26,7 @@
 // Revision 0.08 - Separate comb and seq logic into separate slways blocks
 // Revision 0.09 - Implement reset signal functionality
 // Revision 0.10 - Remove initialization values for temp regs
+// Revision 0.11 - Remove temp variables and comb logic as it is redundant
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -55,74 +56,55 @@ module decryption_regfile #(
 	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
 	//	Everything happens on the positive edge of the [clk] signal		//
 	//																	//
-	//	set [done_temp] to HIGH id [read] OR [write] are HIGH 			//
-	//	set [error_temp] to HIGH if [addr] is invalid					//
+	//	set [done] to HIGH id [read] OR [write] were HIGH 				//
+	//	set [error] to HIGH if [addr] were invalid						//
 	//																	//
 	//	based on [addr]:												//
-	//		set [reg_temp] = [wdata] if write is HIGH					//
-	//		set [rdata_temp] = reg_temp if [read] is HIGH				//
-	//	assign all temp values to their corespondents					//
+	//		set [reg] = [wdata] if write is HIGH						//
+	//		set [rdata] = reg if [read] is HIGH							//
 	//////////////////////////////////////////////////////////////////////
-
-	reg [reg_width - 1 : 0]	rdata_temp;
-	reg						done_temp;
-	reg						error_temp;
-	reg [reg_width - 1 : 0] select_temp;
-	reg [reg_width - 1 : 0] caesar_key_temp;
-	reg [reg_width - 1 : 0] scytale_key_temp;
-	reg [reg_width - 1 : 0] zigzag_key_temp;
 
 	always @(posedge clk) begin
 		$display("| reset\t| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");
-		$display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata_temp, done_temp, error_temp, select_temp, caesar_key_temp, scytale_key_temp, zigzag_key_temp);
+		$display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata, done, error, select, caesar_key, scytale_key, zigzag_key);
 		$display("");
 
 		if (rst_n) begin
-			done_temp <= (read || write);
-			error_temp <= (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
+			done <= (read || write);
+			error <= (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
 			case (addr)
 				8'd0: begin // select_register
 					$display("Select Register address detected");
-					rdata_temp <= (read)  ? select_temp : 0;
-					select_temp <= (write) ? {14'b0, wdata[1:0]} : select_temp;
+					rdata <= (read)  ? select : 0;
+					select <= (write) ? {14'b0, wdata[1:0]} : select;
 				end
 
 				8'd16: begin // Caesar key register
 					$display("Caesar Register address detected");
-					rdata_temp <= (read) ? caesar_key_temp : 0;
-					caesar_key_temp <= (write) ? wdata : caesar_key_temp;
+					rdata <= (read) ? caesar_key : 0;
+					caesar_key <= (write) ? wdata : caesar_key;
 				end
 
 				8'd18: begin // Scytale key register
 					$display("Scytale Register address detected");
-					rdata_temp <= (read) ? scytale_key_temp : 0;
-					scytale_key_temp <= (write) ? wdata : scytale_key_temp;
+					rdata <= (read) ? scytale_key : 0;
+					scytale_key <= (write) ? wdata : scytale_key;
 				end
 
 				8'd20: begin // ZigZag key register
 					$display("ZigZag Register address detected");
-					rdata_temp <= (read) ? zigzag_key_temp : 0;
-					zigzag_key_temp <= (write) ? wdata : zigzag_key_temp;
+					rdata <= (read) ? zigzag_key : 0;
+					zigzag_key <= (write) ? wdata : zigzag_key;
 				end
 			endcase
 		end else begin
-			rdata_temp <= 0;
-			done_temp <= 1;
-			error_temp <= 0;
-			select_temp <= 0;
-			caesar_key_temp <= 0;
-			scytale_key_temp <= 16'hFFFF;
-			zigzag_key_temp <= 16'h2;
+			rdata <= 0;
+			done <= 1;
+			error <= 0;
+			select <= 0;
+			caesar_key <= 0;
+			scytale_key <= 16'hFFFF;
+			zigzag_key <= 16'h2;
 		end
-	end
-
-	always @(*) begin
-		error		= error_temp;
-		rdata		= rdata_temp;
-		select		= select_temp;
-		caesar_key	= caesar_key_temp;
-		scytale_key	= scytale_key_temp;
-		zigzag_key	= zigzag_key_temp;
-		done		= done_temp;
 	end
 endmodule

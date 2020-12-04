@@ -27,6 +27,7 @@
 // Revision 0.09 - Implement reset signal functionality
 // Revision 0.10 - Remove initialization values for temp regs
 // Revision 0.11 - Remove temp variables and comb logic as it is redundant
+// Revision 0.12 - Add more doc comments to explain what's going on
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -56,48 +57,81 @@ module decryption_regfile #(
 	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
 	//	Everything happens on the positive edge of the [clk] signal		//
 	//																	//
-	//	set [done] to HIGH id [read] OR [write] were HIGH 				//
-	//	set [error] to HIGH if [addr] were invalid						//
+	// if [rst_n] is HIGH:												//
+	//		set [done] to HIGH id [read] OR [write] were HIGH 			//
+	//		set [error] to HIGH if [addr] were invalid					//
 	//																	//
-	//	based on [addr]:												//
-	//		set [reg] = [wdata] if write is HIGH						//
-	//		set [rdata] = reg if [read] is HIGH							//
+	//		based on [addr]:											//
+	//			set [reg] = [wdata] if write is HIGH					//
+	//			set [rdata] = reg if [read] is HIGH						//
+	//	else															//
+	//		set all outs to their default values						//
 	//////////////////////////////////////////////////////////////////////
 
 	always @(posedge clk) begin
-		$display("| reset\t| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");
-		$display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata, done, error, select, caesar_key, scytale_key, zigzag_key);
-		$display("");
+		// $display("| reset\t| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");
+		// $display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata, done, error, select, caesar_key, scytale_key, zigzag_key);
+		// $display("");
 
-		if (rst_n) begin
-			done <= (read || write);
+		if (rst_n) begin // if !reset is HIGH -> reset is LOW -> handle data normally
+			done <= (read || write); // done is high id read OR write are high
+
+			// error is LOW if addr is one of the following: {0, 16, 18, 20}, or HIGH otherwise
 			error <= (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
+			
 			case (addr)
 				8'd0: begin // select_register
-					$display("Select Register address detected");
+					// Set rdata to the contents of the select register if read is HIGH
+					// If read is LOW, we can set it to 0 or leave it as is, as read
+					// is basically an enable signal for rdata
 					rdata <= (read)  ? select : 0;
+
+					// Set the contents of the select register to be the last 2 bits 
+					// of wdata if write is HIGH
+					// If write is LOW, don't touch it
 					select <= (write) ? {14'b0, wdata[1:0]} : select;
 				end
 
 				8'd16: begin // Caesar key register
-					$display("Caesar Register address detected");
+					// Set rdata to the contents of the caesar register if read is HIGH
+					// If read is LOW, we can set it to 0 or leave it as is, as read
+					// is basically an enable signal for rdata
 					rdata <= (read) ? caesar_key : 0;
+
+					// Set the contents of the caesar register to be the contents
+					// of wdata if write is HIGH
+					// If write is LOW, don't touch it
 					caesar_key <= (write) ? wdata : caesar_key;
 				end
 
 				8'd18: begin // Scytale key register
-					$display("Scytale Register address detected");
+					// Set rdata to the contents of the scytale register if read is HIGH
+					// If read is LOW, we can set it to 0 or leave it as is, as read
+					// is basically an enable signal for rdata
 					rdata <= (read) ? scytale_key : 0;
+
+					// Set the contents of the scytale register to be the contents
+					// of wdata if write is HIGH
+					// If write is LOW, don't touch it
 					scytale_key <= (write) ? wdata : scytale_key;
 				end
 
 				8'd20: begin // ZigZag key register
+					// Set rdata to the contents of the zigzag register if read is HIGH
+					// If read is LOW, we can set it to 0 or leave it as is, as read
+					// is basically an enable signal for rdata
 					$display("ZigZag Register address detected");
 					rdata <= (read) ? zigzag_key : 0;
+
+					// Set the contents of the zigzag register to be the contents
+					// of wdata if write is HIGH
+					// If write is LOW, don't touch it
 					zigzag_key <= (write) ? wdata : zigzag_key;
 				end
 			endcase
-		end else begin
+		end
+		// if !reset is LOW -> reset is HIGH -> set all outs to the default values
+		else begin
 			rdata <= 0;
 			done <= 1;
 			error <= 0;

@@ -21,6 +21,7 @@
 // Revision 0.03 - General Logic Explained in Comments
 // Revision 0.04 - First attempt at an implementation
 // Revision 0.05 - Bug fix: Wrong values for *key signals when rst is HIGH
+// Revision 0.06 - A few hours of debugging later... it works :)
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -32,11 +33,11 @@ module decryption_regfile #(
 			input rst_n,	// reset signal
 			
 			// Register access interface
-			input[addr_witdth - 1:0]		addr, // the address of the desired register
+			input [addr_witdth - 1 : 0]		addr, // the address of the desired register
 			input							read, // basically a read_enable signal
 			input							write, // basically a write_enable signal
-			input [reg_width -1 : 0]		wdata, // the written data
-			output reg [reg_width -1 : 0]	rdata, // the read data
+			input [reg_width - 1 : 0]		wdata, // the written data
+			output reg [reg_width - 1 : 0]	rdata, // the read data
 			output reg						done, // 'bool' value to indicate status
 			output reg						error, // 'bool' value to indicate errors
 			
@@ -62,52 +63,58 @@ module decryption_regfile #(
 	//		set [error] to HIGH											//
 	//		set [done] to HIGH											//
 	//////////////////////////////////////////////////////////////////////
-	
+
+	reg [reg_width - 1 : 0]	rdata_temp = 0;
+	reg						done_temp = 1;
+	reg						error_temp = 0;
+	reg [reg_width - 1 : 0] select_temp = 0;
+	reg [reg_width - 1 : 0] caesar_key_temp = 0;
+	reg [reg_width - 1 : 0] scytale_key_temp = 16'hFFFF;
+	reg [reg_width - 1 : 0] zigzag_key_temp = 16'h2;
+
 	always @(posedge clk) begin
-		if (rst_n) begin
-			rdata <= 0;
-			done <= 0;
-			error <= 0;
-			select <= 16'h0;
-			caesar_key <= 16'h0;
-			scytale_key <= 16'hFFFF;
-			zigzag_key <= 16'h2;
-		end else begin
-			case (addr)
-				8'h00: begin// select_register
-					rdata <= (read == 1)   ? select : 0;
-					select <= (write == 1) ? wdata  : select;
-					error <= 0;
-				end
+		$display("| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");
+		$display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", addr, write, wdata, read, rdata_temp, done_temp, error_temp, select_temp, caesar_key_temp, scytale_key_temp, zigzag_key_temp);
+		$display("");
 
-				8'h10: begin // Caesar key register
-					rdata <= (read == 1)		? caesar_key : 0;
-					caesar_key <= (write == 1)  ? wdata		 : caesar_key;
-					error <= 0;
-				end
+		done_temp = (read || write);
+		error_temp = (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
+		case (addr)
+			8'd0: begin// select_register
+				$display("Select Register address detected");
+				rdata_temp  = (read)  ? select_temp : 0;
+				select_temp = (write) ? {14'b0, wdata[1:0]} : select_temp;
+			end
 
-				8'h12: begin // Scytale key register
-					rdata <= (read == 1) 		? scytale_key : 0;
-					scytale_key <= (write == 1) ? wdata 	  : scytale_key;
-					error <= 0;
-				end
+			8'd16: begin // Caesar key register
+				$display("Caesar Register address detected");
+				rdata_temp = (read) ? caesar_key_temp : 0;
+				caesar_key_temp = (write) ? wdata : caesar_key_temp;
+			end
 
-				8'h14: begin // ZigZag key register
-					rdata <= (read == 1) 		? zigzag_key : 0;
-					zigzag_key <= (write == 1)  ? wdata 	 : zigzag_key;
-					error <= 0;
-				end
+			8'd18: begin // Scytale key register
+				$display("Scytale Register address detected");
+				rdata_temp = (read) ? scytale_key_temp : 0;
+				scytale_key_temp = (write) ? wdata : scytale_key_temp;
+			end
 
-				default: begin// Any invalid addr goes here
-					error <= 1;
-					rdata <= 0;
-					select <= 16'h0;
-					caesar_key <= 16'h0;
-					scytale_key <= 16'hFFFF;
-					zigzag_key <= 16'h2;
-				end
-			endcase
-			done <= read || write;
-		end
+			8'd20: begin // ZigZag key register
+				$display("ZigZag Register address detected");
+				rdata_temp = (read) ? zigzag_key_temp : 0;
+				zigzag_key_temp = (write) ? wdata : zigzag_key_temp;
+			end
+
+			default: begin
+				$display("Invalid address!");
+			end
+		endcase
+		
+		error		<= error_temp;
+		rdata		<= rdata_temp;
+		select		<= select_temp;
+		caesar_key	<= caesar_key_temp;
+		scytale_key	<= scytale_key_temp;
+		zigzag_key	<= zigzag_key_temp;
+		done		<= done_temp;
 	end
 endmodule

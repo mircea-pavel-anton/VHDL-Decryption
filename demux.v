@@ -20,6 +20,7 @@
 // Revision 0.03 - General Logic Explained in Comments
 // Revision 0.04 - First attempt at an implementation
 // Revision 0.05 - Bug fixes: binary syntax was wrong: 2b'00 instead of 2'b00
+// Revision 0.06 - Bug fix: fix reset condition to !rst_n instead of rst_n
 //////////////////////////////////////////////////////////////////////////////////
 
 module demux #(
@@ -66,14 +67,14 @@ module demux #(
 	reg [3 : 0] packet_counter;
 
 	always @(posedge clk_mst) begin
-		if (valid_i && !rst_n) begin
+		if (valid_i && rst_n) begin
 			stored_data <= data_i;
 			packet_counter <= 0;
 		end
 		// if an else statement was implemented, stored_data would have been set to 0 
 		// if valid_i is LOW, and we don't want that. We want stored_data to be 0 
 		// only when the reset signal is HIGH. As such, another if statement is used
-		if (rst_n) begin
+		if (!rst_n) begin
 			stored_data <= 0;
 			packet_counter <= 0;
 		end
@@ -133,7 +134,7 @@ module demux #(
 			packet_counter <= packet_counter + 3'b001;
 		end
 
-		if (packet_counter > 3'd3) begin
+		if (packet_counter == 3'd4) begin
 			// The 4 packets have been sent. Disable all outs
 			data0_o <= 0;
 			data1_o <= 0;
@@ -143,7 +144,7 @@ module demux #(
 			valid2_o <= 0;
 		end
 
-		if (rst_n) begin
+		if (!rst_n) begin
 			// Disable all outs
 			data0_o <= 0;
 			data1_o <= 0;

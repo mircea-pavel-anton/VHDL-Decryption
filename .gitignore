@@ -2,6 +2,7 @@
 start_test.bat
 *.log
 *.txt
+*.result
 build/*
 scripts/*
 tester/*

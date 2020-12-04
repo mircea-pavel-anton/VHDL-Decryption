@@ -15,7 +15,7 @@
 //
 // Revision: 
 // Revision 0.01 - File Created
-// Additional Comments: 
+// Revision 0.02 - Doc Comments Added
 //
 //////////////////////////////////////////////////////////////////////////////////
 module ceasar_decryption#(
@@ -23,20 +23,20 @@ module ceasar_decryption#(
 				parameter KEY_WIDTH = 16
 			)(
 			// Clock and reset interface
-			input clk,
-			input rst_n,
+			input clk,		// system clock
+			input rst_n,	// negated reset
 			
 			// Input interface
-			input[D_WIDTH - 1:0] data_i,
-			input valid_i,
+			input[D_WIDTH - 1:0] data_i, // The encrypted message
+			input valid_i, // Data in enable
 			
 			// Decryption Key
-			input[KEY_WIDTH - 1 : 0] key,
+			input[KEY_WIDTH - 1 : 0] key, // The number of characters to shift
 			
 			// Output interface
-			output reg[D_WIDTH - 1:0] data_o,
-			output reg valid_o
-    );
+			output reg[D_WIDTH - 1:0] data_o, // The decrypted message
+			output reg valid_o // Data out Enable
+	);
 
 // TODO: Implement Caesar Decryption here
 

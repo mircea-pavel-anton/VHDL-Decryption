@@ -25,6 +25,7 @@
 // Revision 0.07 - Update Logic Overview
 // Revision 0.08 - Separate comb and seq logic into separate slways blocks
 // Revision 0.09 - Implement reset signal functionality
+// Revision 0.10 - Remove initialization values for temp regs
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -63,13 +64,13 @@ module decryption_regfile #(
 	//	assign all temp values to their corespondents					//
 	//////////////////////////////////////////////////////////////////////
 
-	reg [reg_width - 1 : 0]	rdata_temp = 0;
-	reg						done_temp = 1;
-	reg						error_temp = 0;
-	reg [reg_width - 1 : 0] select_temp = 0;
-	reg [reg_width - 1 : 0] caesar_key_temp = 0;
-	reg [reg_width - 1 : 0] scytale_key_temp = 16'hFFFF;
-	reg [reg_width - 1 : 0] zigzag_key_temp = 16'h2;
+	reg [reg_width - 1 : 0]	rdata_temp;
+	reg						done_temp;
+	reg						error_temp;
+	reg [reg_width - 1 : 0] select_temp;
+	reg [reg_width - 1 : 0] caesar_key_temp;
+	reg [reg_width - 1 : 0] scytale_key_temp;
+	reg [reg_width - 1 : 0] zigzag_key_temp;
 
 	always @(posedge clk) begin
 		$display("| reset\t| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");

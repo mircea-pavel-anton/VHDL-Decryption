@@ -24,6 +24,7 @@
 // Revision 0.06 - A few hours of debugging later... it works :)
 // Revision 0.07 - Update Logic Overview
 // Revision 0.08 - Separate comb and seq logic into separate slways blocks
+// Revision 0.09 - Implement reset signal functionality
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -75,33 +76,43 @@ module decryption_regfile #(
 		$display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata_temp, done_temp, error_temp, select_temp, caesar_key_temp, scytale_key_temp, zigzag_key_temp);
 		$display("");
 
-		done_temp <= (read || write);
-		error_temp <= (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
-		case (addr)
-			8'd0: begin // select_register
-				$display("Select Register address detected");
-				rdata_temp <= (read)  ? select_temp : 0;
-				select_temp <= (write) ? {14'b0, wdata[1:0]} : select_temp;
-			end
+		if (rst_n) begin
+			done_temp <= (read || write);
+			error_temp <= (addr == 8'd0 || addr == 8'd16 || addr == 8'd18 || addr == 8'd20) ? 0 : 1;
+			case (addr)
+				8'd0: begin // select_register
+					$display("Select Register address detected");
+					rdata_temp <= (read)  ? select_temp : 0;
+					select_temp <= (write) ? {14'b0, wdata[1:0]} : select_temp;
+				end
 
-			8'd16: begin // Caesar key register
-				$display("Caesar Register address detected");
-				rdata_temp <= (read) ? caesar_key_temp : 0;
-				caesar_key_temp <= (write) ? wdata : caesar_key_temp;
-			end
+				8'd16: begin // Caesar key register
+					$display("Caesar Register address detected");
+					rdata_temp <= (read) ? caesar_key_temp : 0;
+					caesar_key_temp <= (write) ? wdata : caesar_key_temp;
+				end
 
-			8'd18: begin // Scytale key register
-				$display("Scytale Register address detected");
-				rdata_temp <= (read) ? scytale_key_temp : 0;
-				scytale_key_temp <= (write) ? wdata : scytale_key_temp;
-			end
+				8'd18: begin // Scytale key register
+					$display("Scytale Register address detected");
+					rdata_temp <= (read) ? scytale_key_temp : 0;
+					scytale_key_temp <= (write) ? wdata : scytale_key_temp;
+				end
 
-			8'd20: begin // ZigZag key register
-				$display("ZigZag Register address detected");
-				rdata_temp <= (read) ? zigzag_key_temp : 0;
-				zigzag_key_temp <= (write) ? wdata : zigzag_key_temp;
-			end
-		endcase
+				8'd20: begin // ZigZag key register
+					$display("ZigZag Register address detected");
+					rdata_temp <= (read) ? zigzag_key_temp : 0;
+					zigzag_key_temp <= (write) ? wdata : zigzag_key_temp;
+				end
+			endcase
+		end else begin
+			rdata_temp <= 0;
+			done_temp <= 1;
+			error_temp <= 0;
+			select_temp <= 0;
+			caesar_key_temp <= 0;
+			scytale_key_temp <= 16'hFFFF;
+			zigzag_key_temp <= 16'h2;
+		end
 	end
 
 	always @(*) begin

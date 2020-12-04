@@ -20,6 +20,9 @@
 // Revision 0.03 - General Logic Explained in Comments
 // Revision 0.04 - First attempt at an implementation
 // Revision 0.05 - Bug fix: remove intermediary signals and work directly with data_o and valid_o
+// Revision 0.06 - Bug fix: the condition for the reset if should be !rst_n, as rst_n is negated.
+//							Also remove redundant ternary operators and leave just the boolean condition itself
+//				   General code cleanup
 //////////////////////////////////////////////////////////////////////////////////
 
 module mux #(
@@ -59,7 +62,7 @@ module mux #(
 
 	always @(posedge clk) begin
 		// If the reset signal is HIGH, disable all outs
-		if (rst_n) begin
+		if (!rst_n) begin
 			data_o <= 0;
 			valid_o <= 0;
 		end else begin // if reset is LOW
@@ -70,7 +73,7 @@ module mux #(
 					// What happens here is that the ternary operator assigns
 					// the value of [dataX_i] to [data_o] when [validX_i]
 					// is HIGH, and 0 otherwise
-					data_o <= (valid0_i == 1) ? data0_i : 0;
+					data_o <= (valid0_i) ? data0_i : 0;
 
 					// This statement handles the 'second' and 'third' 
 					// clock cycles, starting the count when the [validX_i]
@@ -82,17 +85,17 @@ module mux #(
 					// HIGH and [valid_o] is LOW, it toggles it from
 					// LOW to HIGH and then back from HIGH to LOW in
 					// 2 clock cycles
-					valid_o <= (valid0_i == 1 && valid_o == 0) ? 1 : 0;
+					valid_o <= (valid0_i && !valid_o);
 				end
 				
 				2'b01: begin // see comments above
-					data_o <= (valid1_i == 1) ? data1_i : 0;
-					valid_o <= (valid1_i == 1 && valid_o == 0) ? 1 : 0;
+					data_o <= (valid1_i) ? data1_i : 0;
+					valid_o <= (valid1_i && !valid_o);
 				end
 				
 				2'b10: begin // see comments above
-					data_o <= (valid2_i == 1) ? data2_i : 0;
-					valid_o <= (valid2_i == 1 && valid_o == 0) ? 1 : 0;
+					data_o <= (valid2_i) ? data2_i : 0;
+					valid_o <= (valid2_i && !valid_o);
 				end
 				
 				// The [select] signal should never reach this case, but we're

@@ -22,6 +22,7 @@
 // Revision 0.04 - First attempt at an implementation
 // Revision 0.05 - Bug fix: Wrong values for *key signals when rst is HIGH
 // Revision 0.06 - A few hours of debugging later... it works :)
+// Revision 0.07 - Update Logic Overview
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -51,17 +52,13 @@ module decryption_regfile #(
 	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
 	//	Everything happens on the positive edge of the [clk] signal		//
 	//																	//
-	//	if [addr] is valid:												//
-	//		if [read] is HIGH:											//
-	//			set [rdata] to the contents of the block at [addr]		//
-	//			set [done] to HIGH										//
-	//		if [write] is HIGH:											//
-	//			set the contents of the block at [add] to [wdata]		//
-	//			set [done] to HIGH on the next clock					//
-	//		set [error] to LOW											//
-	//	else															//
-	//		set [error] to HIGH											//
-	//		set [done] to HIGH											//
+	//	set [done_temp] to HIGH id [read] OR [write] are HIGH 			//
+	//	set [error_temp] to HIGH if [addr] is invalid					//
+	//																	//
+	//	based on [addr]:												//
+	//		set [reg_temp] = [wdata] if write is HIGH					//
+	//		set [rdata_temp] = reg_temp if [read] is HIGH				//
+	//	assign all temp values to their corespondents					//
 	//////////////////////////////////////////////////////////////////////
 
 	reg [reg_width - 1 : 0]	rdata_temp = 0;

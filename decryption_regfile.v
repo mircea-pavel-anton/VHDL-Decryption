@@ -57,7 +57,7 @@ module decryption_regfile #(
 	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
 	//	Everything happens on the positive edge of the [clk] signal		//
 	//																	//
-	// if [rst_n] is HIGH:												//
+	//	if [rst_n] is HIGH:												//
 	//		set [done] to HIGH id [read] OR [write] were HIGH 			//
 	//		set [error] to HIGH if [addr] were invalid					//
 	//																	//

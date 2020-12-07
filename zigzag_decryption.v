@@ -16,7 +16,7 @@
 // Revision: 
 // Revision 0.01 - File Created
 // Revision 0.02 - Implement busy port
-//
+// Revision 0.03 - Doc Comments Added
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
 				parameter D_WIDTH = 8,
@@ -25,21 +25,21 @@ module zigzag_decryption #(
 				parameter START_DECRYPTION_TOKEN = 8'hFA
 			)(
 			// Clock and reset interface
-			input clk,
-			input rst_n,
+			input clk,		// system clock
+			input rst_n,	// negated reset
 			
 			// Input interface
-			input[D_WIDTH - 1:0] data_i,
-			input valid_i,
+			input[D_WIDTH - 1:0] data_i,	// The encrypted message
+			input valid_i,					// Input enable
 			
 			// Decryption Key
 			input[KEY_WIDTH - 1 : 0] key,
 			
 			// Output interface
-			output reg busy,
-			output reg[D_WIDTH - 1:0] data_o,
-			output reg valid_o
-    );
+			output reg busy,					// Indicates processing is taking place
+			output reg[D_WIDTH - 1:0] data_o,	// The decrypted message
+			output reg valid_o					// Output enable
+	);
 
 // TODO: Implement ZigZag Decryption here
 

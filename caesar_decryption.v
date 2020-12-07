@@ -16,9 +16,9 @@
 // Revision: 
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
-// Revision 0.03 - Implement busy port
+// Revision 0.03 - Implement busy port, fix typo in module name
 //////////////////////////////////////////////////////////////////////////////////
-module ceasar_decryption#(
+module caasar_decryption #(
 				parameter D_WIDTH = 8,
 				parameter KEY_WIDTH = 16
 			)(

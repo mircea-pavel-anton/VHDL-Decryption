@@ -44,8 +44,12 @@ module caesar_decryption #(
 	//	Everything happens on the positive edge of the [clk] signal		//
 	//																	//
 	//	if [rst_n] is HIGH:												//
-	//		set valid_o to HIGH if valid_i was HIGH last clock 			//
-	//		set data_o to data_i - key if valid_i was HIGH las clock	//
+	//		if [valid_i] is HIGH										//
+	//			set [valid_o] to HIGH						 			//
+	//			set [data_o] to [data_i] - [key]						//
+	//		else														//
+	//			set [valid_o] to LOW									//
+	//			set [data_o] to 0										//
 	//	else															//
 	//		set all outs to 0											//
 	//////////////////////////////////////////////////////////////////////

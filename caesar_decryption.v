@@ -16,7 +16,7 @@
 // Revision: 
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
-//
+// Revision 0.03 - Implement busy port
 //////////////////////////////////////////////////////////////////////////////////
 module ceasar_decryption#(
 				parameter D_WIDTH = 8,
@@ -34,6 +34,7 @@ module ceasar_decryption#(
 			input[KEY_WIDTH - 1 : 0] key, // The number of characters to shift
 			
 			// Output interface
+			output reg busy,
 			output reg[D_WIDTH - 1:0] data_o, // The decrypted message
 			output reg valid_o // Data out Enable
 	);

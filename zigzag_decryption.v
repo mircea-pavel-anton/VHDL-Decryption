@@ -15,7 +15,7 @@
 //
 // Revision: 
 // Revision 0.01 - File Created
-// Additional Comments: 
+// Revision 0.02 - Implement busy port
 //
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
@@ -36,6 +36,7 @@ module zigzag_decryption #(
 			input[KEY_WIDTH - 1 : 0] key,
 			
 			// Output interface
+			output reg busy,
 			output reg[D_WIDTH - 1:0] data_o,
 			output reg valid_o
     );

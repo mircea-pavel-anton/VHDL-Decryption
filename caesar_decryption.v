@@ -1,17 +1,18 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company:		A.C.S
+// Engineer:	Anton Mircea-Pavel
 // 
-// Create Date:    21:17:08 11/23/2020 
+// Create Date:		21:17:08 11/23/2020 
 // Design Name: 
-// Module Name:    ceasar_decryption 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
+// Module Name:		ceasar_decryption
+// Project Name:	Tema2_Decryption
+// Target Devices:	N/A
+// Tool versions:	14.5
+// Description:		This block decrypts a caesar-encrypted message and
+//					sends it out, one character at a time
 //
-// Dependencies: 
+// Dependencies:	N/A
 //
 // Revision: 
 // Revision 0.01 - File Created

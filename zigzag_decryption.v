@@ -1,19 +1,20 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company:		A.C.S
+// Engineer:	Anton Mircea-Pavel
 // 
-// Create Date:    22:33:04 11/23/2020 
+// Create Date:		22:33:04 11/23/2020 
 // Design Name: 
-// Module Name:    zigzag_decryption 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
+// Module Name:		zigzag_decryption 
+// Project Name:	Tema2_Decryption
+// Target Devices:	N/A
+// Tool versions:	14.5
+// Description:		This block decrypts a zigzag-encrypted message and
+//					sends it out, one character at a time
 //
-// Dependencies: 
+// Dependencies:	N/A
 //
-// Revision: 
+// Revision:
 // Revision 0.01 - File Created
 // Revision 0.02 - Implement busy port
 // Revision 0.03 - Doc Comments Added

@@ -18,7 +18,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - Implement busy port, fix typo in module name
 //////////////////////////////////////////////////////////////////////////////////
-module caasar_decryption #(
+module caesar_decryption #(
 				parameter D_WIDTH = 8,
 				parameter KEY_WIDTH = 16
 			)(

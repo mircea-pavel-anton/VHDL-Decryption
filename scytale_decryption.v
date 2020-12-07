@@ -18,6 +18,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - First attempt at an implementation
 // Revision 0.04 - Comment out $display and $write commands
+// Revision 0.05 - General Logic Exmplained in top comment
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
 			parameter D_WIDTH = 8, 
@@ -42,7 +43,23 @@ module scytale_decryption#(
 			output reg[D_WIDTH - 1:0] data_o,	// The decrypted message
 			output reg valid_o					// Output enable
 	);	
-
+	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
+	//	Everything happens on the positive edge of the [clk] signal		//
+	//																	//
+	//	We're basically implementing a nested for loop					//
+	//	The loop is then broken down as to execute one iteration per	//
+	//	clock cycle.													//
+	//	The implemented loop is:										//
+	//	for (int j = 0; j < key_N; j++) {								//
+	//		for (int k = j; k < i; k += key_N) {						//
+	//			print( message[k] );									//
+	//		}															//
+	//	}																//
+	//																	//
+	//	As such, 2 aux variables are needed, j and k, to keep track of	//
+	//	the current position in the vector.								//
+	//	We can observe i itself is not needed, as it is key_M * key_N	//
+	//////////////////////////////////////////////////////////////////////
 	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
 	reg [KEY_WIDTH - 1 : 0] i = 0;
 	reg [KEY_WIDTH - 1 : 0] j = 0;

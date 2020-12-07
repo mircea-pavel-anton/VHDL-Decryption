@@ -17,6 +17,7 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - First attempt at an implementation
+// Revision 0.04 - Comment out $display and $write commands
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
 			parameter D_WIDTH = 8, 
@@ -57,7 +58,7 @@ module scytale_decryption#(
 					j <= 0;
 					k <= j;
 					busy <= 1;
-					$display("\n| i\t\t| j\t\t| k\t\t| data_o|");
+					// $display("\n| i\t\t| j\t\t| k\t\t| data_o|");
 				end
 			end
 
@@ -66,14 +67,14 @@ module scytale_decryption#(
 					valid_o <= 1;
 					data_o <= message[D_WIDTH * k +: D_WIDTH ];
 					k <= k + key_N;
-					$display("| %d\t| %d\t| %d\t| %s\t\t| message(%d)", i, j, k, data_o, k);
+					// $display("| %d\t| %d\t| %d\t| %s\t\t| message(%d)", i, j, k, data_o, k);
 				end else begin
 					j <= j + 1;
 					k <= j + 1 + key_N;
 					
 					if (j + 1 < key_N) begin
 						data_o <= message[D_WIDTH * (j+1) +: D_WIDTH ];
-						$display("| %d\t| %d\t| %d\t| %s\t\t| message(%d)", i, j, k, data_o, j+1);
+						// $display("| %d\t| %d\t| %d\t| %s\t\t| message(%d)", i, j, k, data_o, j+1);
 					end else begin
 						i <= 0; j <= 0; k <= 0;
 						message <= 0;

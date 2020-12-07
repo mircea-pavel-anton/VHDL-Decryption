@@ -19,6 +19,7 @@
 // Revision 0.03 - First attempt at an implementation
 // Revision 0.04 - Comment out $display and $write commands
 // Revision 0.05 - General Logic Exmplained in top comment
+// Revision 0.06 - Remove dumb comment & Change BA to NBA in always block
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
 			parameter D_WIDTH = 8, 
@@ -58,7 +59,6 @@ module scytale_decryption#(
 	//																	//
 	//	As such, 2 aux variables are needed, j and k, to keep track of	//
 	//	the current position in the vector.								//
-	//	We can observe i itself is not needed, as it is key_M * key_N	//
 	//////////////////////////////////////////////////////////////////////
 	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
 	reg [KEY_WIDTH - 1 : 0] i = 0;
@@ -69,8 +69,8 @@ module scytale_decryption#(
 		if (rst_n) begin
 			if (valid_i) begin
 				if (data_i != START_DECRYPTION_TOKEN) begin
-					message[D_WIDTH * i +: D_WIDTH ] = data_i;
-					i = i + 1;
+					message[D_WIDTH * i +: D_WIDTH ] <= data_i;
+					i <= i + 1;
 				end else begin
 					j <= 0;
 					k <= j;

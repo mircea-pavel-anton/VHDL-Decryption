@@ -18,6 +18,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - Implement busy port, fix typo in module name
 // Revision 0.04 - General Logic Exmplained in top comment
+// Revision 0.05 - First attempt at an implementation
 //////////////////////////////////////////////////////////////////////////////////
 module caesar_decryption #(
 				parameter D_WIDTH = 8,
@@ -49,4 +50,16 @@ module caesar_decryption #(
 	//		set all outs to 0											//
 	//////////////////////////////////////////////////////////////////////
 
+	always @(posedge clk) begin
+		busy <= 0;
+		if (rst_n) begin
+			valid_o <= valid_i;
+			data_o <= (valid_i) ? data_i - key : 0;
+			if (valid_o)
+				$display("| key\t| in\t| out\t|\n|0x%0h\t| 0x%0h\t| 0x%0h\t|", key, data_i, data_o);
+		end else begin
+			valid_o <= 0;
+			data_o <= 0;
+		end
+	end
 endmodule

@@ -19,6 +19,7 @@
 // Revision 0.03 - Implement busy port, fix typo in module name
 // Revision 0.04 - General Logic Exmplained in top comment
 // Revision 0.05 - First attempt at an implementation
+// Revision 0.06 - Rephrase explanation to be more verbose
 //////////////////////////////////////////////////////////////////////////////////
 module caesar_decryption #(
 				parameter D_WIDTH = 8,

@@ -17,6 +17,7 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - Implement busy port, fix typo in module name
+// Revision 0.04 - General Logic Exmplained in top comment
 //////////////////////////////////////////////////////////////////////////////////
 module caesar_decryption #(
 				parameter D_WIDTH = 8,
@@ -38,7 +39,14 @@ module caesar_decryption #(
 			output reg[D_WIDTH - 1:0] data_o, // The decrypted message
 			output reg valid_o // Data out Enable
 	);
-
-// TODO: Implement Caesar Decryption here
+	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
+	//	Everything happens on the positive edge of the [clk] signal		//
+	//																	//
+	//	if [rst_n] is HIGH:												//
+	//		set valid_o to HIGH if valid_i was HIGH last clock 			//
+	//		set data_o to data_i - key if valid_i was HIGH las clock	//
+	//	else															//
+	//		set all outs to 0											//
+	//////////////////////////////////////////////////////////////////////
 
 endmodule

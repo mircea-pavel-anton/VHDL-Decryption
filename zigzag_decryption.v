@@ -9,7 +9,7 @@
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
 // Tool versions:	14.5
-// Description:		This block decrypts a zigzag-encrypted message and
+// Description:		This blocindex_odecrypts a zigzag-encrypted message and
 //					sends it out, one character at a time
 //
 // Dependencies:	N/A
@@ -25,7 +25,7 @@ module zigzag_decryption #(
 				parameter MAX_NOF_CHARS = 50,
 				parameter START_DECRYPTION_TOKEN = 8'hFA
 			)(
-			// Clock and reset interface
+			// Clocindex_oand reset interface
 			input clk,		// system clock
 			input rst_n,	// negated reset
 			
@@ -42,7 +42,31 @@ module zigzag_decryption #(
 			output reg valid_o					// Output enable
 	);
 
-// TODO: Implement ZigZag Decryption here
+	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
+	reg [KEY_WIDTH - 1 : 0] n = 0;
 
+	always @(posedge clk) begin
+		if (rst_n) begin
+			if (valid_i) begin
+				if (data_i != START_DECRYPTION_TOKEN) begin
+					message[D_WIDTH * n +: D_WIDTH] <= data_i;
+					n <= n + 1;
+				end else begin
+					index_o <= 0;
+					busy <= 1;
+				end
+			end
 
+			if (busy) begin
+				// TODO pipe out message
+			end
+		end else begin
+			valid_o <= 0;
+			data_o <= 0;
+			busy <= 0;
+			index_o <= 0;
+			n <= 0;
+			message <= 0;
+		end
+	end
 endmodule

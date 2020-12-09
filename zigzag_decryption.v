@@ -63,12 +63,10 @@ module zigzag_decryption #(
 
 			if (busy) begin
 				if (index_o < n) begin
-					$write("%s ", data_o);
 					valid_o <= 1;
 					data_o <= message_aux[D_WIDTH * index_o +: D_WIDTH];
 					index_o <= index_o + 1;
 				end else begin
-					$write("%s \n", data_o);
 					valid_o <= 0;
 					data_o <= 0;
 					busy <= 0;

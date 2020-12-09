@@ -41,9 +41,10 @@ module zigzag_decryption #(
 			output reg[D_WIDTH - 1:0] data_o,	// The decrypted message
 			output reg valid_o					// Output enable
 	);
-
 	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
+	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message_aux = 0;
 	reg [KEY_WIDTH - 1 : 0] n = 0;
+	reg [KEY_WIDTH - 1 : 0] index_o = 0;
 
 	always @(posedge clk) begin
 		if (rst_n) begin
@@ -58,7 +59,18 @@ module zigzag_decryption #(
 			end
 
 			if (busy) begin
-				// TODO pipe out message
+				if (index_o < n) begin
+					valid_o <= 1;
+					data_o <= message[D_WIDTH * index_o +: D_WIDTH];
+					index_o <= index_o + 1;
+				end else begin
+					valid_o <= 0;
+					data_o <= 0;
+					busy <= 0;
+					index_o <= 0;
+					n <= 0;
+					message <= 0;
+				end
 			end
 		end else begin
 			valid_o <= 0;
@@ -67,6 +79,16 @@ module zigzag_decryption #(
 			index_o <= 0;
 			n <= 0;
 			message <= 0;
+		end
+	end
+
+	always @(busy) begin
+		if (busy) begin
+			case (key)
+				// todo handle all different keys here
+				default:
+					message_aux = message;
+			endcase
 		end
 	end
 endmodule

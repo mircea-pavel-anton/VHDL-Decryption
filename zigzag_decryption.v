@@ -45,6 +45,9 @@ module zigzag_decryption #(
 	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message_aux = 0;
 	reg [KEY_WIDTH - 1 : 0] n = 0;
 	reg [KEY_WIDTH - 1 : 0] index_o = 0;
+	reg [KEY_WIDTH - 1 : 0] i = 0;
+	reg [KEY_WIDTH - 1 : 0] j = 0;
+	reg [KEY_WIDTH - 1 : 0] k = 0;
 
 	always @(posedge clk) begin
 		if (rst_n) begin
@@ -60,10 +63,12 @@ module zigzag_decryption #(
 
 			if (busy) begin
 				if (index_o < n) begin
+					$write("%s ", data_o);
 					valid_o <= 1;
-					data_o <= message[D_WIDTH * index_o +: D_WIDTH];
+					data_o <= message_aux[D_WIDTH * index_o +: D_WIDTH];
 					index_o <= index_o + 1;
 				end else begin
+					$write("%s \n", data_o);
 					valid_o <= 0;
 					data_o <= 0;
 					busy <= 0;
@@ -85,9 +90,37 @@ module zigzag_decryption #(
 	always @(busy) begin
 		if (busy) begin
 			case (key)
-				// todo handle all different keys here
-				default:
+				2: begin
+					k = ( n>>1 ) + ( n&1 );
+					j = 0;
+					for (i = 0; i < MAX_NOF_CHARS / 2; i = i + 1) begin
+						if ( i < k ) begin
+							message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * i +: D_WIDTH];
+							j = j + 1;
+							if (i + k < n) begin
+								message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * (i + k) +: D_WIDTH];
+								j = j + 1;
+							end
+						end
+					end
+				end
+
+				3: begin
+					k = 0;
+					for (i = 0; i < 3; i = i + 1) begin
+						for(j = 0; j < MAX_NOF_CHARS; j = j + 1) begin
+							if (j >= i && j < n) begin
+								message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * k +: D_WIDTH];
+								k = k + 1;
+								j = (i == 0 || i == 2) ? (j + 3) : (j + 1);
+							end
+						end
+					end
+				end
+
+				default: begin
 					message_aux = message;
+				end
 			endcase
 		end
 	end

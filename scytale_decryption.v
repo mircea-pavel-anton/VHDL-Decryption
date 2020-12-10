@@ -21,6 +21,7 @@
 // Revision 0.04 - Comment out $display and $write commands
 // Revision 0.05 - General Logic Exmplained in top comment
 // Revision 0.06 - Remove dumb comment & Change BA to NBA in always block
+// Revision 0.07 - Merge nested ifs into a single one with cond1 & cond2
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
 			parameter D_WIDTH = 8, 
@@ -67,40 +68,39 @@ module scytale_decryption#(
 	reg [KEY_WIDTH - 1 : 0] k = 0;
 
 	always @(posedge clk) begin
-		if (rst_n) begin
-			if (valid_i) begin
-				if (data_i != START_DECRYPTION_TOKEN) begin
-					message[D_WIDTH * i +: D_WIDTH ] <= data_i;
-					i <= i + 1;
+		if (rst_n && valid_i) begin
+			if (data_i != START_DECRYPTION_TOKEN) begin
+				message[D_WIDTH * i +: D_WIDTH ] <= data_i;
+				i <= i + 1;
+			end else begin
+				j <= 0;
+				k <= j;
+				busy <= 1;
+			end
+		end
+
+		if (busy) begin
+			if (k < i) begin
+				valid_o <= 1;
+				data_o <= message[D_WIDTH * k +: D_WIDTH ];
+				k <= k + key_N;
+			end else begin
+				j <= j + 1;
+				k <= j + 1 + key_N;
+				
+				if (j + 1 < key_N) begin
+					data_o <= message[D_WIDTH * (j+1) +: D_WIDTH ];
 				end else begin
-					j <= 0;
-					k <= j;
-					busy <= 1;
+					i <= 0; j <= 0; k <= 0;
+					message <= 0;
+					valid_o <= 0;
+					data_o <= 0;
+					busy <= 0;
 				end
 			end
+		end
 
-			if (busy) begin
-				if (k < i) begin
-					valid_o <= 1;
-					data_o <= message[D_WIDTH * k +: D_WIDTH ];
-					k <= k + key_N;
-				end else begin
-					j <= j + 1;
-					k <= j + 1 + key_N;
-					
-					if (j + 1 < key_N) begin
-						data_o <= message[D_WIDTH * (j+1) +: D_WIDTH ];
-					end else begin
-						i <= 0; j <= 0; k <= 0;
-						message <= 0;
-						valid_o <= 0;
-						data_o <= 0;
-						busy <= 0;
-					end
-				end
-			end
-
-		end else begin
+		if ( rst_n == 0 ) begin
 			i <= 0; j <= 0; k <= 0;
 			message <= 0;
 			valid_o <= 0;

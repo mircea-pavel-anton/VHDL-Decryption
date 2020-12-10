@@ -69,14 +69,10 @@ module caesar_decryption #(
 			// if [valid_i] was high last clock, decrypt input message and
 			// send it to [data_o]
 			data_o <= (valid_i) ? data_i - key : 0;
-
-			// DEBUG
-			//if (valid_o)
-			//	$display("| key\t| in\t| out\t|\n|0x%0h\t| 0x%0h\t| 0x%0h\t|", key, data_i, data_o);
 		end 
 		
 		// if reset is high, set [valid_o] to low. [data_o] CAN be ignored
-		else begin
+		if (!rst_n) begin
 			valid_o <= 0;
 			data_o <= 0;
 		end

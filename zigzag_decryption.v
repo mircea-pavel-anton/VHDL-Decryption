@@ -138,6 +138,7 @@ module zigzag_decryption #(
 				end
 			endcase
 		end
+
 		if ( (busy && index_o >= n) || rst_n == 0) begin
 			valid_o <= 0;
 			data_o <= 0;

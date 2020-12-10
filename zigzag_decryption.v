@@ -19,10 +19,11 @@
 // Revision 0.02 - Implement busy port
 // Revision 0.03 - Doc Comments Added
 // Revision 0.04 - After a few sleepless nights (2 to be precise) of futile attempts to implement this
-//					in a comb always block and running into countless & confusing errors
+//					in a comb always block and running into countless & confusing errors,
 //					I decided to ditch that and try a seq implementation
-//					This it the first attempt at an implementation for decryption where key=3
+//					This is the first attempt at an implementation for decryption where key=3
 //					I would like to formally apologise for what you're about to read... but it works
+// Revision 0.05 - Implement decryption algo for key = 2. Code optimizations on the way... Here be dragons
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
 				parameter D_WIDTH = 8,
@@ -30,7 +31,7 @@ module zigzag_decryption #(
 				parameter MAX_NOF_CHARS = 50,
 				parameter START_DECRYPTION_TOKEN = 8'hFA
 			)(
-			// Clocindex_oand reset interface
+			// Clock and reset interface
 			input clk,		// system clock
 			input rst_n,	// negated reset
 			
@@ -75,6 +76,9 @@ module zigzag_decryption #(
 					state <= 0;
 					index_o <= 0;
 					
+					if (key == 2) begin
+						aux1 <= (n>>1) + (n&1);
+					end
 					if (key == 3) begin
 						cycles <= n >> 2; // n / cycle_length = number of full cycles 4
 						aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );  // elements in the first row
@@ -88,6 +92,32 @@ module zigzag_decryption #(
 					$write("n=%d | n mod 4 = %d | cycles = %d | fr = %d | sr = %d\n", n, n&3, cycles, aux1, aux2);
 				end
 				case (key)
+					2: begin
+						if (index_o < n) begin
+							valid_o <= 1;
+							index_o <= index_o + 1;
+							if (state == 0) begin
+								data_o <= message[D_WIDTH * i +: D_WIDTH];
+								state <= 1;
+							end 
+							if (state == 1) begin
+								data_o <= message[D_WIDTH * ( i + aux1 ) +: D_WIDTH];
+								i <= i + 1;
+								$write("j=%d\n", j + aux1 );
+								state <= 0;
+							end 
+						end else begin
+							valid_o <= 0;
+							data_o <= 0;
+							busy <= 0;
+							index_o <= 0;
+							n <= 0;
+							message <= 0;
+							aux1 <= 0;
+							aux2 <= 0;
+							cycles <= 0;
+						end
+					end
 					3: begin // a cycle of 4 units
 						if (index_o < n) begin
 							valid_o <= 1;
@@ -144,7 +174,6 @@ module zigzag_decryption #(
 						end
 					end
 				endcase
-
 
 
 			end

@@ -9,7 +9,7 @@
 // Project Name:	Tema2_Decryption
 // Target Devices:	N/A
 // Tool versions:	14.5
-// Description:		This blocindex_odecrypts a zigzag-encrypted message and
+// Description:		This block decrypts a zigzag-encrypted message and
 //					sends it out, one character at a time
 //
 // Dependencies:	N/A
@@ -18,6 +18,11 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Implement busy port
 // Revision 0.03 - Doc Comments Added
+// Revision 0.04 - After a few sleepless nights (2 to be precise) of futile attempts to implement this
+//					in a comb always block and running into countless & confusing errors
+//					I decided to ditch that and try a seq implementation
+//					This it the first attempt at an implementation for decryption where key=3
+//					I would like to formally apologise for what you're about to read... but it works
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
 				parameter D_WIDTH = 8,
@@ -42,38 +47,106 @@ module zigzag_decryption #(
 			output reg valid_o					// Output enable
 	);
 	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
-	reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message_aux = 0;
 	reg [KEY_WIDTH - 1 : 0] n = 0;
 	reg [KEY_WIDTH - 1 : 0] index_o = 0;
+
 	reg [KEY_WIDTH - 1 : 0] i = 0;
 	reg [KEY_WIDTH - 1 : 0] j = 0;
 	reg [KEY_WIDTH - 1 : 0] k = 0;
+	reg [KEY_WIDTH - 1 : 0] cycles = 0;
+	reg [KEY_WIDTH - 1 : 0] state = 0;
+	reg [KEY_WIDTH - 1 : 0] aux1 = 0;
+	reg [KEY_WIDTH - 1 : 0] aux2 = 0;
+	
 
 	always @(posedge clk) begin
 		if (rst_n) begin
 			if (valid_i) begin
 				if (data_i != START_DECRYPTION_TOKEN) begin
 					message[D_WIDTH * n +: D_WIDTH] <= data_i;
-					n <= n + 1;
+					n <= n + 1'b1;
 				end else begin
 					index_o <= 0;
 					busy <= 1;
+
+					i <= 0;
+					j <= 0;
+					k <= 0;
+					state <= 0;
+					index_o <= 0;
+					
+					if (key == 3) begin
+						cycles <= n >> 2; // n / cycle_length = number of full cycles 4
+						aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );  // elements in the first row
+						aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 ); // elements in the second row
+					end
 				end
 			end
 
 			if (busy) begin
-				if (index_o < n) begin
-					valid_o <= 1;
-					data_o <= message_aux[D_WIDTH * index_o +: D_WIDTH];
-					index_o <= index_o + 1;
-				end else begin
-					valid_o <= 0;
-					data_o <= 0;
-					busy <= 0;
-					index_o <= 0;
-					n <= 0;
-					message <= 0;
+				if (index_o == 0) begin
+					$write("n=%d | n mod 4 = %d | cycles = %d | fr = %d | sr = %d\n", n, n&3, cycles, aux1, aux2);
 				end
+				case (key)
+					3: begin // a cycle of 4 units
+						if (index_o < n) begin
+							valid_o <= 1;
+							index_o <= index_o + 1;
+							if (state == 0) begin
+								data_o <= message[D_WIDTH * i +: D_WIDTH];
+								i <= i + 1;
+								$write("i=%d\n", i);
+								state <= 1;
+							end 
+							if (state == 1) begin
+								data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
+								j <= j + 1;
+								$write("j=%d\n", j + aux1 );
+								state <= 2;
+							end 
+							if (state == 2) begin
+								data_o <= message[D_WIDTH * ( k + aux1 + aux2 ) +: D_WIDTH];
+								k <= k + 1;
+								$write("k=%d\n", k + aux1 + aux2 );
+								state <= 3;
+							end
+							if (state == 3) begin
+								data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
+								j <= j + 1;
+								$write("j=%d\n", j + aux1 );
+								state <= 0;
+							end
+						end else begin
+							valid_o <= 0;
+							data_o <= 0;
+							busy <= 0;
+							index_o <= 0;
+							n <= 0;
+							message <= 0;
+							aux1 <= 0;
+							aux2 <= 0;
+							cycles <= 0;
+						end
+					end
+
+					default: begin
+						if (index_o < n) begin
+							valid_o <= 1;
+							data_o <= message[D_WIDTH * index_o +: D_WIDTH];
+							index_o <= index_o + 1'b1;
+						end else begin
+							valid_o <= 0;
+							data_o <= 0;
+							busy <= 0;
+							index_o <= 0;
+							n <= 0;
+							message <= 0;
+						end
+					end
+				endcase
+
+
+
 			end
 		end else begin
 			valid_o <= 0;
@@ -82,44 +155,6 @@ module zigzag_decryption #(
 			index_o <= 0;
 			n <= 0;
 			message <= 0;
-		end
-	end
-
-	always @(busy) begin
-		if (busy) begin
-			case (key)
-				2: begin
-					k = ( n>>1 ) + ( n&1 );
-					j = 0;
-					for (i = 0; i < MAX_NOF_CHARS / 2; i = i + 1) begin
-						if ( i < k ) begin
-							message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * i +: D_WIDTH];
-							j = j + 1;
-							if (i + k < n) begin
-								message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * (i + k) +: D_WIDTH];
-								j = j + 1;
-							end
-						end
-					end
-				end
-
-				3: begin
-					k = 0;
-					for (i = 0; i < 3; i = i + 1) begin
-						for(j = 0; j < MAX_NOF_CHARS; j = j + 1) begin
-							if (j >= i && j < n) begin
-								message_aux[D_WIDTH * j +: D_WIDTH] = message[D_WIDTH * k +: D_WIDTH];
-								k = k + 1;
-								j = (i == 0 || i == 2) ? (j + 3) : (j + 1);
-							end
-						end
-					end
-				end
-
-				default: begin
-					message_aux = message;
-				end
-			endcase
 		end
 	end
 endmodule

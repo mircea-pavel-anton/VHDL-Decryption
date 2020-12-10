@@ -24,6 +24,7 @@
 //					This is the first attempt at an implementation for decryption where key=3
 //					I would like to formally apologise for what you're about to read... but it works
 // Revision 0.05 - Implement decryption algo for key = 2. Code optimizations on the way... Here be dragons
+// Revision 0.06 - Remove duplicate code, $write statements and unused signals
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
 				parameter D_WIDTH = 8,
@@ -54,11 +55,9 @@ module zigzag_decryption #(
 	reg [KEY_WIDTH - 1 : 0] i = 0;
 	reg [KEY_WIDTH - 1 : 0] j = 0;
 	reg [KEY_WIDTH - 1 : 0] k = 0;
-	reg [KEY_WIDTH - 1 : 0] cycles = 0;
 	reg [KEY_WIDTH - 1 : 0] state = 0;
 	reg [KEY_WIDTH - 1 : 0] aux1 = 0;
 	reg [KEY_WIDTH - 1 : 0] aux2 = 0;
-	
 
 	always @(posedge clk) begin
 		if (rst_n) begin
@@ -80,7 +79,6 @@ module zigzag_decryption #(
 						aux1 <= (n>>1) + (n&1);
 					end
 					if (key == 3) begin
-						cycles <= n >> 2; // n / cycle_length = number of full cycles 4
 						aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );  // elements in the first row
 						aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 ); // elements in the second row
 					end
@@ -88,9 +86,6 @@ module zigzag_decryption #(
 			end
 
 			if (busy) begin
-				if (index_o == 0) begin
-					$write("n=%d | n mod 4 = %d | cycles = %d | fr = %d | sr = %d\n", n, n&3, cycles, aux1, aux2);
-				end
 				case (key)
 					2: begin
 						if (index_o < n) begin
@@ -103,19 +98,8 @@ module zigzag_decryption #(
 							if (state == 1) begin
 								data_o <= message[D_WIDTH * ( i + aux1 ) +: D_WIDTH];
 								i <= i + 1;
-								$write("j=%d\n", j + aux1 );
 								state <= 0;
 							end 
-						end else begin
-							valid_o <= 0;
-							data_o <= 0;
-							busy <= 0;
-							index_o <= 0;
-							n <= 0;
-							message <= 0;
-							aux1 <= 0;
-							aux2 <= 0;
-							cycles <= 0;
 						end
 					end
 					3: begin // a cycle of 4 units
@@ -125,37 +109,23 @@ module zigzag_decryption #(
 							if (state == 0) begin
 								data_o <= message[D_WIDTH * i +: D_WIDTH];
 								i <= i + 1;
-								$write("i=%d\n", i);
 								state <= 1;
 							end 
 							if (state == 1) begin
 								data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
 								j <= j + 1;
-								$write("j=%d\n", j + aux1 );
 								state <= 2;
 							end 
 							if (state == 2) begin
 								data_o <= message[D_WIDTH * ( k + aux1 + aux2 ) +: D_WIDTH];
 								k <= k + 1;
-								$write("k=%d\n", k + aux1 + aux2 );
 								state <= 3;
 							end
 							if (state == 3) begin
 								data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
 								j <= j + 1;
-								$write("j=%d\n", j + aux1 );
 								state <= 0;
 							end
-						end else begin
-							valid_o <= 0;
-							data_o <= 0;
-							busy <= 0;
-							index_o <= 0;
-							n <= 0;
-							message <= 0;
-							aux1 <= 0;
-							aux2 <= 0;
-							cycles <= 0;
 						end
 					end
 
@@ -164,18 +134,19 @@ module zigzag_decryption #(
 							valid_o <= 1;
 							data_o <= message[D_WIDTH * index_o +: D_WIDTH];
 							index_o <= index_o + 1'b1;
-						end else begin
-							valid_o <= 0;
-							data_o <= 0;
-							busy <= 0;
-							index_o <= 0;
-							n <= 0;
-							message <= 0;
 						end
 					end
 				endcase
-
-
+				if (index_o >= n) begin
+					valid_o <= 0;
+					data_o <= 0;
+					busy <= 0;
+					index_o <= 0;
+					n <= 0;
+					message <= 0;
+					aux1 <= 0;
+					aux2 <= 0;
+				end
 			end
 		end else begin
 			valid_o <= 0;

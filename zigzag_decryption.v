@@ -26,6 +26,7 @@
 // Revision 0.05 - Implement decryption algo for key = 2. Code optimizations on the way... Here be dragons
 // Revision 0.06 - Remove duplicate code, $write statements and unused signals
 // Revision 0.07 - More code dedup & implement small FSM lookalikes in decryption algo
+// Revision 0.08 - Merge nested ifs into a single one with cond1 & cond2 & ...
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
 				parameter D_WIDTH = 8,
@@ -61,89 +62,81 @@ module zigzag_decryption #(
 	reg [KEY_WIDTH - 1 : 0] aux2 = 0;
 
 	always @(posedge clk) begin
-		if (rst_n) begin
-			if (valid_i) begin
-				if (data_i != START_DECRYPTION_TOKEN) begin
-					message[D_WIDTH * n +: D_WIDTH] <= data_i;
-					n <= n + 1'b1;
-				end else begin
-					index_o <= 0;
-					busy <= 1;
+		if (rst_n && valid_i) begin
+			if (data_i != START_DECRYPTION_TOKEN) begin
+				message[D_WIDTH * n +: D_WIDTH] <= data_i;
+				n <= n + 1'b1;
+			end else begin
+				index_o <= 0;
+				busy <= 1;
 
-					case (key)
-						2: begin
-							aux1 <= (n>>1) + (n&1);
-						end
-						3: begin
-							aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );  // elements in the first row
-							aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 ); // elements in the second row
-						end
-					endcase
-				end
-			end
-
-			if (busy) begin
 				case (key)
 					2: begin
-						if (index_o < n) begin
-							valid_o <= 1;
-							index_o <= index_o + 1;
-
-							case (state) // fsm attempt
-								0: begin
-									data_o <= message[D_WIDTH * i +: D_WIDTH];
-									state <= 1;
-								end
-								1: begin
-									data_o <= message[D_WIDTH * ( i + aux1 ) +: D_WIDTH];
-									i <= i + 1;
-									state <= 0;
-								end
-							endcase
-						end
+						aux1 <= (n>>1) + (n&1);
 					end
-					3: begin // a cycle of 4 units
-						if (index_o < n) begin
-							valid_o <= 1;
-							index_o <= index_o + 1;
-
-							case (state)
-								0: begin
-									data_o <= message[D_WIDTH * i +: D_WIDTH];
-									i <= i + 1;
-									state <= 1;
-								end
-
-								1: begin
-									data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
-									j <= j + 1;
-									state <= 2;
-								end
-
-								2: begin
-									data_o <= message[D_WIDTH * ( k + aux1 + aux2 ) +: D_WIDTH];
-									k <= k + 1;
-									state <= 3;
-								end
-
-								3: begin
-									data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
-									j <= j + 1;
-									state <= 0;
-								end
-							endcase
-						end
-					end
-
-					default: begin
-						if (index_o < n) begin
-							valid_o <= 1;
-							data_o <= message[D_WIDTH * index_o +: D_WIDTH];
-							index_o <= index_o + 1'b1;
-						end
+					3: begin
+						aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );  // elements in the first row
+						aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 ); // elements in the second row
 					end
 				endcase
 			end
+		end
+
+		if (busy && index_o < n) begin
+			case (key)
+				2: begin
+					valid_o <= 1;
+					index_o <= index_o + 1;
+
+					case (state) // fsm attempt
+						0: begin
+							data_o <= message[D_WIDTH * i +: D_WIDTH];
+							state <= 1;
+						end
+						1: begin
+							data_o <= message[D_WIDTH * ( i + aux1 ) +: D_WIDTH];
+							i <= i + 1;
+							state <= 0;
+						end
+					endcase
+				end
+				3: begin // a cycle of 4 units
+					valid_o <= 1;
+					index_o <= index_o + 1;
+
+					case (state)
+						0: begin
+							data_o <= message[D_WIDTH * i +: D_WIDTH];
+							i <= i + 1;
+							state <= 1;
+						end
+
+						1: begin
+							data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
+							j <= j + 1;
+							state <= 2;
+						end
+
+						2: begin
+							data_o <= message[D_WIDTH * ( k + aux1 + aux2 ) +: D_WIDTH];
+							k <= k + 1;
+							state <= 3;
+						end
+
+						3: begin
+							data_o <= message[D_WIDTH * ( j + aux1 ) +: D_WIDTH];
+							j <= j + 1;
+							state <= 0;
+						end
+					endcase
+				end
+
+				default: begin
+					valid_o <= 1;
+					data_o <= message[D_WIDTH * index_o +: D_WIDTH];
+					index_o <= index_o + 1;
+				end
+			endcase
 		end
 		if ( (busy && index_o >= n) || rst_n == 0) begin
 			valid_o <= 0;

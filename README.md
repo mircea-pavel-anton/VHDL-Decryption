@@ -65,3 +65,60 @@ if (rst_n) begin
     data_o <= (valid_i) ? data_i - key : 0;
 end 
 ```
+
+## Scytale Decryption
+
+This algorithm involves writing the given string into a `M`x`N` matrix, row by row and then reading line by line.
+
+By performing a simple example, pen-on-paper style, for a word of length `16`, with the matrix size of 4x4, we get the following:
+
+``` fenced-code-language
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 ->
+
+1  5  9 13
+2  6 10 14
+3  7 11 15
+4  8 12 16
+
+-> 1 5 9 13 2 6 10 14 3 7 11 15 4 8 12 16
+```
+
+So what we can observe the rule:
+
+1. Starting from character 1, we increment by the number of columns
+2. Once the increment overflows the number of total characters, we move to start from the second element
+3. We keep doing this for x iterations, where x is the number of rows
+
+We can model this behaviour with a nested for loop:
+
+``` C
+for (int i = 0; i < key_N; i++) {
+    for (int j = i; j < n; j += key_N) {
+        print( message[j] );
+    }
+}
+```
+
+However, in verilog, we want to model this loop in such a way that each iteration is executed in a clock cycle:
+
+``` verilog
+always @(posedge clk)
+    if (busy) begin 
+        // This prints the i'th line of the matrix
+        if (j < n) begin // we can observe the stop condition for the 2nd loop
+            valid_o <= 1;
+            data_o <= message[D_WIDTH * j +: D_WIDTH ];
+            j <= j + key_N; // the increment condition for the second loop
+        end else begin
+            valid_o <= 1;
+            i <= i + 1; // the increment condition for the first loop
+            j <= i + 1 + key_N;
+            
+            if (i + 1 < key_N) begin // the stop condition for the first loop
+                data_o <= message[D_WIDTH * (i+1) +: D_WIDTH ];
+            end
+        end
+    end
+end
+// see the code for a more in depth explanation
+```

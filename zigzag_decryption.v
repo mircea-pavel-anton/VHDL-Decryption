@@ -30,7 +30,8 @@
 // Revision 0.09 - Add comments along the way to explain wtf is going on
 // Revision 0.10 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide tab (WTF??) and all the code
 //                 looks messy as a result of that.
-//////////////////////////////////////////////////////////////////////////////////
+// Revision 0.11 - Add easter egg (key=3)
+///////////////////////////DSL T PEO CEEIS RGD ILIHTEAEE//////////////////////////
 module zigzag_decryption #(
                 parameter D_WIDTH = 8,
                 parameter KEY_WIDTH = 16,

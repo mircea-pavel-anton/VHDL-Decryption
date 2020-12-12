@@ -25,6 +25,7 @@
 // Revision 0.08 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide
 //                 tab (WTF??) and all the code looks messy as a result of that.
 // Revision 0.09 - Make a single reset state, instead of having 2
+// Revision 0.10 - Add more comments along the way to explain what we're doing
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
             parameter D_WIDTH = 8, 
@@ -65,38 +66,66 @@ module scytale_decryption#(
     //    As such, 2 aux variables are needed, j and k, to keep track of//
     //    the current position in the vector.                           //
     //////////////////////////////////////////////////////////////////////
-    reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
-    reg [KEY_WIDTH - 1 : 0] n = 0;
+
+    reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;  // the encrypted message
+    reg [KEY_WIDTH - 1 : 0] n = 0;  // the length of the encrypted message
+
+    // Some auxiliary indexes i had no better names for
     reg [KEY_WIDTH - 1 : 0] i = 0;
     reg [KEY_WIDTH - 1 : 0] j = 0;
 
     always @(posedge clk) begin
-        if (rst_n && valid_i) begin
+        if (rst_n && valid_i) begin // reading the encrypted message
+            // if we have not yet reached the end of the message, store each
+            // letter into [message]
+            // Note that message will have the string stored backwards
             if (data_i != START_DECRYPTION_TOKEN) begin
                 message[D_WIDTH * n +: D_WIDTH ] <= data_i;
-                n <= n + 1;
+                n <= n + 1; // increment the character counter
             end else begin
-                i <= 0;
-                j <= 0;
-                busy <= 1;
+                // Set indexes to 0
+                i <= 0; j <= 0;
+                busy <= 1;  // let the other devices connected to us know
+                            // that we are busy
             end
         end
 
-        if (busy) begin
+        if (busy) begin // output-ing the decrypted message
+            // This prints the i'th line of the matrix
             if (j < n) begin
-                valid_o <= 1;
+                valid_o <= 1;   // Set output_enable to high, so that
+                                // other devices connected to us know
+                                // we're not spitting bullshit rn
                 data_o <= message[D_WIDTH * j +: D_WIDTH ];
                 j <= j + key_N;
             end else begin
-                i <= i + 1;
+                valid_o <= 1;   // Same as above
+                i <= i + 1; // Go to the next line
+                
+                // j becomes i+1 and not i because in the nested loop, blocking
+                // assignments are implemented, and i++; j=i; means that j = i+1;
+                // We have to also add key_N to j because we have to output some
+                // data this iteration to. So we're basically performing
+                // both an iteration and an incrementation in the same cycle
+                // So this is basically the j needed for the second iteration
+                // in the next loop
                 j <= i + 1 + key_N;
                 
+                // the first iteration being implemented here
                 if (i + 1 < key_N) begin
                     data_o <= message[D_WIDTH * (i+1) +: D_WIDTH ];
                 end
             end
         end
 
+        // If we were to model a FSM, this is the reset state
+        // The events that would send us into such a state are:
+        // 1. if the reset signal is high (rst_n is LOW)
+        // 2. If we were hard working boys (or girls) and we just
+        //    finished decrypting a message and outputting it
+        // In both of those cases, we would like to reset all values
+        // as to not interfere with future decryptions.
+        //Ltp·tpehabhatesees··t··t//(4)
         if ( rst_n == 0 || (i+1 >= key_N && j >= n)) begin
             n <= 0; i <= 0; j <= 0;
             message <= 0;

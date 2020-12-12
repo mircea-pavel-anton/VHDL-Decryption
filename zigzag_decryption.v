@@ -35,10 +35,12 @@
 // Revision 0.10 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide
 //                 tab (WTF??) and all the code looks messy as a result of that.
 // Revision 0.11 - Clip all lines at max 85 characters for better readability
+// Revision 0.12 - After a small heart-attack after uploading to the online checker
+//                 and failing all tests... change key_width to 8 bits :)
 //////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
                 parameter D_WIDTH = 8,
-                parameter KEY_WIDTH = 16,
+                parameter KEY_WIDTH = 8,
                 parameter MAX_NOF_CHARS = 50,
                 parameter START_DECRYPTION_TOKEN = 8'hFA
             )(

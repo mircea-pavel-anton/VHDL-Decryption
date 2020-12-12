@@ -24,6 +24,7 @@
 // Revision 0.07 - Merge nested ifs into a single one with cond1 & cond2
 // Revision 0.08 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide
 //                 tab (WTF??) and all the code looks messy as a result of that.
+// Revision 0.09 - Make a single reset state, instead of having 2
 //////////////////////////////////////////////////////////////////////////////////
 module scytale_decryption#(
             parameter D_WIDTH = 8, 
@@ -65,45 +66,39 @@ module scytale_decryption#(
     //    the current position in the vector.                           //
     //////////////////////////////////////////////////////////////////////
     reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0;
+    reg [KEY_WIDTH - 1 : 0] n = 0;
     reg [KEY_WIDTH - 1 : 0] i = 0;
     reg [KEY_WIDTH - 1 : 0] j = 0;
-    reg [KEY_WIDTH - 1 : 0] k = 0;
 
     always @(posedge clk) begin
         if (rst_n && valid_i) begin
             if (data_i != START_DECRYPTION_TOKEN) begin
-                message[D_WIDTH * i +: D_WIDTH ] <= data_i;
-                i <= i + 1;
+                message[D_WIDTH * n +: D_WIDTH ] <= data_i;
+                n <= n + 1;
             end else begin
+                i <= 0;
                 j <= 0;
-                k <= j;
                 busy <= 1;
             end
         end
 
         if (busy) begin
-            if (k < i) begin
+            if (j < n) begin
                 valid_o <= 1;
-                data_o <= message[D_WIDTH * k +: D_WIDTH ];
-                k <= k + key_N;
+                data_o <= message[D_WIDTH * j +: D_WIDTH ];
+                j <= j + key_N;
             end else begin
-                j <= j + 1;
-                k <= j + 1 + key_N;
+                i <= i + 1;
+                j <= i + 1 + key_N;
                 
-                if (j + 1 < key_N) begin
-                    data_o <= message[D_WIDTH * (j+1) +: D_WIDTH ];
-                end else begin
-                    i <= 0; j <= 0; k <= 0;
-                    message <= 0;
-                    valid_o <= 0;
-                    data_o <= 0;
-                    busy <= 0;
+                if (i + 1 < key_N) begin
+                    data_o <= message[D_WIDTH * (i+1) +: D_WIDTH ];
                 end
             end
         end
 
-        if ( rst_n == 0 ) begin
-            i <= 0; j <= 0; k <= 0;
+        if ( rst_n == 0 || (i+1 >= key_N && j >= n)) begin
+            n <= 0; i <= 0; j <= 0;
             message <= 0;
             valid_o <= 0;
             data_o <= 0;

@@ -112,3 +112,21 @@ Writting address: `0x14` with value `0x0014` -> Zigzag register
 | 0x1	| 0x14	| 0x1	| 0x14	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0		| 0x10		| 0x12		| 0x2		|
 | 0x1	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0	| 0x1	| 0x0	| 0x0		| 0x10		| 0x12		| 0x14		|
 | 0x1	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0	| 0x0		| 0x10		| 0x12		| 0x14		|
+
+## Caesar Decryption
+
+This algorithm basically shifts all characters to the right, and that's it.
+
+In order to decrypt it, we just subtract `key` from each character received:
+
+``` verilog
+// if !reset is high -> reset is low
+if (rst_n) begin
+	// set [valid_o] to high if [valid_i] was high last clock
+	valid_o <= valid_i;
+
+	// if [valid_i] was high last clock, decrypt input message and
+	// send it to [data_o]
+	data_o <= (valid_i) ? data_i - key : 0;
+end 
+```

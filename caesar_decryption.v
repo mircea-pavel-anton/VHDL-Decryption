@@ -24,6 +24,7 @@
 // Revision 0.07 - Add comments throughout the code
 // Revision 0.08 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide
 //                 tab (WTF??) and all the code looks messy as a result of that.
+// Revision 0.09 - Remove bloat comments. (check out the git log to see what i mean)
 //////////////////////////////////////////////////////////////////////////////////
 module caesar_decryption #(
                 parameter D_WIDTH = 8,
@@ -45,20 +46,6 @@ module caesar_decryption #(
             output reg[D_WIDTH - 1:0] data_o, // The decrypted message
             output reg valid_o // Data out Enable
     );
-    /////////////////////////// LOGIC OVERVIEW ///////////////////////////
-    //    Everything happens on the positive edge of the [clk] signal   //
-    //                                                                  //
-    //    if [rst_n] is HIGH:                                           //
-    //        if [valid_i] is HIGH                                      //
-    //            set [valid_o] to HIGH                                 //
-    //            set [data_o] to [data_i] - [key]                      //
-    //        else                                                      //
-    //            set [valid_o] to LOW                                  //
-    //            set [data_o] to 0                                     //
-    //    else                                                          //
-    //        set all outs to 0                                         //
-    //////////////////////////////////////////////////////////////////////
-
     always @(posedge clk) begin
         // busy should always be 0, as per the documentation
         busy <= 0;

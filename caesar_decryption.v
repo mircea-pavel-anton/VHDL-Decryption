@@ -62,6 +62,7 @@ module caesar_decryption #(
         
         // if reset is high, set [valid_o] to low. [data_o] CAN be ignored
         // but we won't, 'cause it's better to be safe than to be sorry :D
+        //Pix xli tewx fi xli tewx//(4)
         if (!rst_n) begin
             valid_o <= 0;
             data_o <= 0;

@@ -18,20 +18,24 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Implement busy port
 // Revision 0.03 - Doc Comments Added
-// Revision 0.04 - After a few sleepless nights (2 to be precise) of futile attempts to implement this
-//                 in a comb always block and running into countless & confusing errors,
-//                  I decided to ditch that and try a seq implementation
-//                  This is the first attempt at an implementation for decryption where key=3
-//                  I would like to formally apologise for what you're about to read... but it works
-// Revision 0.05 - Implement decryption algo for key = 2. Code optimizations on the way... Here be dragons
+// Revision 0.04 - After a few sleepless nights (2 to be precise) of futile 
+//                 attempts to implement this in a combinational always block
+//                 and running into countless & confusing errors,
+//                 I decided to ditch that and try a seq implementation
+//                 This is the first attempt at an implementation for decryption
+//                 where key=3
+//                 I would like to formally apologise for what you're about to read.
+//                 ...but it works
+// Revision 0.05 - Implement decryption algo for key = 2. Code optimizations on the way. 
+//                 ...Here be dragons
 // Revision 0.06 - Remove duplicate code, $write statements and unused signals
 // Revision 0.07 - More code dedup & implement small FSM lookalikes in decryption algo
 // Revision 0.08 - Merge nested ifs into a single one with cond1 & cond2 & ...
 // Revision 0.09 - Add comments along the way to explain wtf is going on
-// Revision 0.10 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide tab (WTF??) and all the code
-//                 looks messy as a result of that.
-// Revision 0.11 - Add easter egg (key=3)
-///////////////////////////DSL T PEO CEEIS RGD ILIHTEAEE//////////////////////////
+// Revision 0.10 - Change all tabs to spaces since Xilinx uses a 3-spaces-wide
+//                 tab (WTF??) and all the code looks messy as a result of that.
+// Revision 0.11 - Clip all lines at max 85 characters for better readability
+//////////////////////////////////////////////////////////////////////////////////
 module zigzag_decryption #(
                 parameter D_WIDTH = 8,
                 parameter KEY_WIDTH = 16,
@@ -50,10 +54,13 @@ module zigzag_decryption #(
             input[KEY_WIDTH - 1 : 0] key,
             
             // Output interface
-            output reg busy,                    // Indicates processing is taking place
-            output reg[D_WIDTH - 1:0] data_o,   // The decrypted message
-            output reg valid_o                  // Output enable
+            output reg busy,                  // Indicates processing is going on
+            output reg[D_WIDTH - 1:0] data_o, // The decrypted message
+            output reg valid_o                // Output enable
     );
+
+
+
     reg [D_WIDTH * MAX_NOF_CHARS - 1 : 0] message = 0; // the encrypted message
     reg [KEY_WIDTH - 1 : 0] n = 0; // the length of the message
     reg [KEY_WIDTH - 1 : 0] index_o = 0; // the index of the output message.
@@ -94,7 +101,8 @@ module zigzag_decryption #(
                 case (key)
                     2: begin
                         aux1 <= (n>>1) + (n&1); // elements in the first row
-                                                // aux1 = n/2 + n%2 (n div 2 + n mod 2)
+                                                // aux1 = n/2 + n%2 
+                                                //      = (n div 2 + n mod 2)
                     end
                     3: begin
                         // aux1 = n/4 +  (n%4 > 0) ( n div 4 + 1 if n mod 4 > 0)
@@ -126,11 +134,12 @@ module zigzag_decryption #(
                         // row IF the length of the partial cycle is greater than or
                         // equal to 2 characters
                         // => (n/4) * 2 + (n%4 ? 1) ? 1 : 0
-                        // Similarly, the third row will have one element per full cycle,
-                        // and one more element if the partial cycle has a length of 3
+                        // Similarly, the third row will have one element per full
+                        // cycle, and one more element if the partial cycle has a
+                        // length of 3
                         // However, this value is not needed
-                        aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 ); // elements in the first row
-                        aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 ); // elements in the second row
+                        aux1 <= (n>>2) + ( ((n&3) > 0) ? 1 : 0 );
+                        aux2 <= (n>>2) * 2 + ( ((n&3) > 1) ? 1 : 0 );
                     end
                 endcase
             end
@@ -181,17 +190,20 @@ module zigzag_decryption #(
                     // A puny attempt of mimicking a FSM for the decryption
                     // algo.
                     // I tried to make the whole shizzle be a FSM, but i failed
-                    // This is a tad bit more complex than the previous implementation
-                    // Basically, we split the string into 3 substrings this time
-                    // instead of 2, and the order we have to print in is a bit funky.
-                    // We have to go from 1 to 2 to 3, then back to 2 and then repeat
-                    // As such, state=0 prints from substring 1, then goes to state=1
-                    //          state=1 prints from substring 2, then goes to state=2
-                    //          state=2 prints from substring 3, then goes to state=3
-                    //          state=3 prints from substring 2, then goes to state=0
+                    // This is a tad bit more complex than the previous
+                    // implementation. Basically, we split the string into 3 
+                    // substrings this time instead of 2, and the order we
+                    // have to print in is a bit funky.
+                    // We have to go from 1 to 2 to 3, then back to 2 and then
+                    // repeat
+                    // As such, state=0 print from substring 1, then go to state=1
+                    //          state=1 print from substring 2, then go to state=2
+                    //          state=2 print from substring 3, then go to state=3
+                    //          state=3 print from substring 2, then go to state=0
                     // State=3 could have been bundled up together with state=1
-                    // but i find that this way it is easier to follow and more readable
-                    // To each his own, i guess
+                    // but i find that this way it is easier to follow and more 
+                    // readable
+                    // To each his own, i guess...
                     case (state)
                         0: begin // Prints the i'th element from substring 1
                             data_o <= message[D_WIDTH * i +: D_WIDTH];
@@ -236,7 +248,7 @@ module zigzag_decryption #(
         //    finished decrypting a message and outputting it
         // In both of those cases, we would like to reset all values
         // as to not interfere with future decryptions.
-        // Let the past be the past
+        //LTP TPE H ATB H ATTESEES//(3)
         if ( (busy && index_o >= n) || rst_n == 0) begin
             valid_o <= 0;
             data_o <= 0;

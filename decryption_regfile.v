@@ -28,6 +28,7 @@
 // Revision 0.10 - Remove initialization values for temp regs
 // Revision 0.11 - Remove temp variables and comb logic as it is redundant
 // Revision 0.12 - Add more doc comments to explain what's going on
+// Revision 0.13 - Remove $display statements used for debugging
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_regfile #(
@@ -69,10 +70,6 @@ module decryption_regfile #(
 	//////////////////////////////////////////////////////////////////////
 
 	always @(posedge clk) begin
-		// $display("| reset\t| addr\t| write\t| wdata\t| read\t| rdata\t| done\t| error\t| select\t| caesar\t| scytale\t| zigzag\t|");
-		// $display("| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t| 0x%0h\t\t| 0x%0h\t\t| 0x%0h\t| 0x%0h\t\t| ", rst_n, addr, write, wdata, read, rdata, done, error, select, caesar_key, scytale_key, zigzag_key);
-		// $display("");
-
 		if (rst_n) begin // if !reset is HIGH -> reset is LOW -> handle data normally
 			done <= (read || write); // done is high id read OR write are high
 

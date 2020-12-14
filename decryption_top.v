@@ -17,6 +17,7 @@
 // Revision 0.01 - File Created
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - Rough outline of what the code should look like
+// Revision 0.04 - Instantiate regfile
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_top#(
@@ -68,20 +69,23 @@ module decryption_top#(
     wire                        zigzag_valid;
     wire [MST_DWIDTH - 1 : 0]   zigzag_message;
 
+    // Additional wires
+    wire [1:0] mux_select;
+
     decryption_regfile reg(
         .clk(clk_sys),
         .rst_n(rst_n),
-        .addr(),
-        .read(),
-        .write(),
-        .rdata(),
-        .wdata(),
-        .done(),
-        .error(),
-        .select(),
-        .caesar_key(),
-        .scytale_key(),
-        .zigzag_key()
+        .addr(addr),
+        .read(read),
+        .write(write),
+        .rdata(rdata),
+        .wdata(wdata),
+        .done(done),
+        .error(error),
+        .select(mux_select),
+        .caesar_key(caesar_key),
+        .scytale_key(scytale_key),
+        .zigzag_key(zigzag_key)
     );
 
     demux dmx(

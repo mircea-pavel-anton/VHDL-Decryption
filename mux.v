@@ -32,7 +32,7 @@ module mux #(
     )(
         // Clock and reset interface
         input clk,      // system clock
-        input rst_n,    // reset signal
+        input rst_n,    // negated reset signal
         
         //Select interface
         input[1:0] select,

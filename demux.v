@@ -33,7 +33,7 @@ module demux #(
         // Clock and reset interface
         input clk_sys,      // system clock
         input clk_mst,      // master clock (4x system clock speed)
-        input rst_n,        // reset signal
+        input rst_n,        // negated reset signal
         
         //Select interface
         input[1:0] select,

@@ -39,15 +39,15 @@ module decryption_regfile #(
         )(
             // Clock and reset interface
             input clk,        // system clock
-            input rst_n,    // reset signal
+            input rst_n,      // reset signal
             
             // Register access interface
-            input [addr_witdth - 1 : 0]    addr, // the address of the desired register
-            input                          read, // basically a read_enable signal
+            input [addr_witdth - 1 : 0]    addr,  // the address of the desired register
+            input                          read,  // basically a read_enable signal
             input                          write, // basically a write_enable signal
             input [reg_width - 1 : 0]      wdata, // the written data
             output reg [reg_width - 1 : 0] rdata, // the read data
-            output reg                     done, // 'bool' value to indicate status
+            output reg                     done,  // 'bool' value to indicate status
             output reg                     error, // 'bool' value to indicate errors
             
             // Output wires

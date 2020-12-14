@@ -32,19 +32,19 @@ module caesar_decryption #(
             )(
             // Clock and reset interface
             input clk,        // system clock
-            input rst_n,    // negated reset
+            input rst_n,      // negated reset
             
             // Input interface
-            input[D_WIDTH - 1:0] data_i, // The encrypted message
-            input valid_i, // Data in enable
+            input[D_WIDTH - 1:0] data_i,    // The encrypted message
+            input valid_i,                  // Data in enable
             
             // Decryption Key
-            input[KEY_WIDTH - 1 : 0] key, // The number of characters to shift
+            input[KEY_WIDTH - 1 : 0] key,   // The number of characters to shift
             
             // Output interface
             output reg busy,
-            output reg[D_WIDTH - 1:0] data_o, // The decrypted message
-            output reg valid_o // Data out Enable
+            output reg[D_WIDTH - 1:0] data_o,   // The decrypted message
+            output reg valid_o                  // Data out Enable
     );
     always @(posedge clk) begin
         // busy should always be 0, as per the documentation

@@ -20,6 +20,7 @@
 // Revision 0.04 - Instantiate regfile
 // Revision 0.05 - Instantiate MUX
 // Revision 0.06 - Instantiate DEMUX
+// Revision 0.07 - Instantiate decryption modules
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_top#(
@@ -128,8 +129,8 @@ module decryption_top#(
     caesar_decryption cd(
         .clk(clk),
         .rst_n(rst_n),
-        .data_i(),
-        .valid_i(),
+        .data_i(caesar_data_i),
+        .valid_i(caesar_valid_i),
         .key(caesar_key),
         .busy(caesar_busy),
         .data_o(caesar_message),
@@ -139,8 +140,8 @@ module decryption_top#(
     scytale_decryption sd(
         .clk(clk),
         .rst_n(rst_n),
-        .data_i(),
-        .valid_i(),
+        .data_i(scytale_data_i),
+        .valid_i(scytale_valid_i),
         .key_M(scytale_key[7:0]),
         .key_N(scytale_key[15:8]),
         .busy(scytale_busy),
@@ -151,8 +152,8 @@ module decryption_top#(
     zigzag_decryption zd(
         .clk(clk),
         .rst_n(rst_n),
-        .data_i(),
-        .valid_i(),
+        .data_i(zigzag_data_i),
+        .valid_i(zigzag_valid_i),
         .key(zigzag_key[7:0]),
         .busy(zigzag_busy),
         .data_o(zigzag_message),

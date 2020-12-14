@@ -19,6 +19,7 @@
 // Revision 0.03 - Rough outline of what the code should look like
 // Revision 0.04 - Instantiate regfile
 // Revision 0.05 - Instantiate MUX
+// Revision 0.06 - Instantiate DEMUX
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_top#(
@@ -57,18 +58,24 @@ module decryption_top#(
     wire [KEY_WIDTH - 1 : 0]    caesar_key;
     wire                        caesar_valid;
     wire [MST_DWIDTH - 1 : 0]   caesar_message;
+    wire                        caesar_valid_i;
+    wire [MST_DWIDTH - 1 : 0]   caesar_data_i;
 
     // Scytale decryption wires
     wire                        scytale_busy;
     wire [KEY_WIDTH - 1 : 0]    scytale_key;
     wire                        scytale_valid;
     wire [MST_DWIDTH - 1 : 0]   scytale_message;
+    wire                        scytale_valid_i;
+    wire [MST_DWIDTH - 1 : 0]   scytale_data_i;
     
     // Zigzag decryption wires
     wire                        zigzag_busy;
     wire [KEY_WIDTH - 1 : 0]    zigzag_key;
     wire                        zigzag_valid;
     wire [MST_DWIDTH - 1 : 0]   zigzag_message;
+    wire                        zigzag_valid_i;
+    wire [MST_DWIDTH - 1 : 0]   zigzag_data_i;
 
     // Additional wires
     wire [1:0] mux_select;
@@ -93,15 +100,15 @@ module decryption_top#(
         .clk_sys(clk_sys),
         .clk_mst(clk_mst),
         .rst_n(rst_n),
-        .select(),
-        .data_i(),
-        .valid_i(),
-        .data0_o(),
-        .valid0_o(),
-        .data1_o(),
-        .valid1_o(),
-        .data2_o(),
-        .valid2_o()
+        .select(mux_select),
+        .data_i(data_i),
+        .valid_i(valid_i),
+        .data0_o(caesar_data_i),
+        .valid0_o(caesar_valid_i),
+        .data1_o(scytale_data_i),
+        .valid1_o(scytale_valid_i),
+        .data2_o(zigzag_data_i),
+        .valid2_o(zigzag_valid_i)
     );
 
     mux mx(

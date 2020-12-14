@@ -39,8 +39,8 @@ module demux #(
         input[1:0] select,
         
         // Input interface
-        input [MST_DWIDTH - 1 : 0]            data_i,        // Encrypted Message
-        input                                valid_i,    // Enable Signal
+        input [MST_DWIDTH - 1 : 0]          data_i,     // Encrypted Message
+        input                               valid_i,    // Enable Signal
         
         //output interfaces
         output reg [SYS_DWIDTH - 1 : 0]        data0_o,    // Caesar Dec. Input
@@ -50,7 +50,7 @@ module demux #(
         output reg                            valid1_o,    // Scytale Dec. Enable
         
         output reg [SYS_DWIDTH - 1 : 0]        data2_o,    // ZigZag Dec. Output
-        output reg                            valid2_o    // ZigZag Dec. Enable
+        output reg                            valid2_o     // ZigZag Dec. Enable
     );
     /////////////////////////// LOGIC OVERVIEW ///////////////////////////
     //    On the positive edge of [master_clock]:                       //

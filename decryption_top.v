@@ -21,6 +21,7 @@
 // Revision 0.05 - Instantiate MUX
 // Revision 0.06 - Instantiate DEMUX
 // Revision 0.07 - Instantiate decryption modules
+// Revision 0.08 - Fix signal widths
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_top#(
@@ -56,32 +57,32 @@ module decryption_top#(
     );
     // Caesar decryption wires
     wire                        caesar_busy;
-    wire [KEY_WIDTH - 1 : 0]    caesar_key;
-    wire                        caesar_valid;
-    wire [MST_DWIDTH - 1 : 0]   caesar_message;
+    wire [reg_width - 1 : 0]    caesar_key;
+    wire                        caesar_valid_o;
+    wire [SYS_DWIDTH - 1 : 0]   caesar_data_o;
     wire                        caesar_valid_i;
-    wire [MST_DWIDTH - 1 : 0]   caesar_data_i;
+    wire [SYS_DWIDTH - 1 : 0]   caesar_data_i;
 
     // Scytale decryption wires
     wire                        scytale_busy;
-    wire [KEY_WIDTH - 1 : 0]    scytale_key;
-    wire                        scytale_valid;
-    wire [MST_DWIDTH - 1 : 0]   scytale_message;
+    wire [reg_width - 1 : 0]    scytale_key;
+    wire                        scytale_valid_o;
+    wire [SYS_DWIDTH - 1 : 0]   scytale_data_o;
     wire                        scytale_valid_i;
-    wire [MST_DWIDTH - 1 : 0]   scytale_data_i;
-    
+    wire [SYS_DWIDTH - 1 : 0]   scytale_data_i;
+
     // Zigzag decryption wires
     wire                        zigzag_busy;
-    wire [KEY_WIDTH - 1 : 0]    zigzag_key;
-    wire                        zigzag_valid;
-    wire [MST_DWIDTH - 1 : 0]   zigzag_message;
+    wire [reg_width - 1 : 0]    zigzag_key;
+    wire                        zigzag_valid_o;
+    wire [SYS_DWIDTH - 1 : 0]   zigzag_data_o;
     wire                        zigzag_valid_i;
-    wire [MST_DWIDTH - 1 : 0]   zigzag_data_i;
+    wire [SYS_DWIDTH - 1 : 0]   zigzag_data_i;
 
     // Additional wires
-    wire [1:0] mux_select;
+    wire [reg_width - 1 : 0] mux_select;
 
-    decryption_regfile reg(
+    decryption_regfile regfile(
         .clk(clk_sys),
         .rst_n(rst_n),
         .addr(addr),
@@ -101,7 +102,7 @@ module decryption_top#(
         .clk_sys(clk_sys),
         .clk_mst(clk_mst),
         .rst_n(rst_n),
-        .select(mux_select),
+        .select(mux_select[1:0]),
         .data_i(data_i),
         .valid_i(valid_i),
         .data0_o(caesar_data_i),
@@ -115,15 +116,15 @@ module decryption_top#(
     mux mx(
         .clk(clk),
         .rst_n(rst_n),
-        .select(mux_select),
+        .select(mux_select[1:0]),
         .data_o(data_o),
         .valid_o(valid_o),
-        .data0_i(caesar_message),
-        .valid0_i(caesar_valid),
-        .data1_i(scytale_message),
-        .valid1_i(scytale_valid),
-        .data2_i(zigzag_message),
-        .valid2_i(zigzag_valid)
+        .data0_i(caesar_data_o),
+        .valid0_i(caesar_valid_o),
+        .data1_i(scytale_data_o),
+        .valid1_i(scytale_valid_o),
+        .data2_i(zigzag_data_o),
+        .valid2_i(zigzag_valid_o)
     );
 
     caesar_decryption cd(
@@ -133,8 +134,8 @@ module decryption_top#(
         .valid_i(caesar_valid_i),
         .key(caesar_key),
         .busy(caesar_busy),
-        .data_o(caesar_message),
-        .valid_o(caesar_valid)
+        .data_o(caesar_data_o),
+        .valid_o(caesar_valid_o)
     );
 
     scytale_decryption sd(
@@ -145,8 +146,8 @@ module decryption_top#(
         .key_M(scytale_key[7:0]),
         .key_N(scytale_key[15:8]),
         .busy(scytale_busy),
-        .data_o(scytale_message),
-        .valid_o(scytale_valid)
+        .data_o(scytale_data_o),
+        .valid_o(scytale_valid_o)
     );
 
     zigzag_decryption zd(
@@ -156,8 +157,8 @@ module decryption_top#(
         .valid_i(zigzag_valid_i),
         .key(zigzag_key[7:0]),
         .busy(zigzag_busy),
-        .data_o(zigzag_message),
-        .valid_o(zigzag_valid)
+        .data_o(zigzag_data_o),
+        .valid_o(zigzag_valid_o)
     );
 
     // Output assigns

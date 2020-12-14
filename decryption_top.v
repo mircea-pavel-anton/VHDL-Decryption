@@ -18,6 +18,7 @@
 // Revision 0.02 - Doc Comments Added
 // Revision 0.03 - Rough outline of what the code should look like
 // Revision 0.04 - Instantiate regfile
+// Revision 0.05 - Instantiate MUX
 //////////////////////////////////////////////////////////////////////////////////
 
 module decryption_top#(
@@ -106,15 +107,15 @@ module decryption_top#(
     mux mx(
         .clk(clk),
         .rst_n(rst_n),
-        .select(),
-        .data_o(),
-        .valid_o(),
-        .data0_i(),
-        .valid0_i(),
-        .data1_i(),
-        .valid1_i(),
-        .data2_i(),
-        .valid2_i()
+        .select(mux_select),
+        .data_o(data_o),
+        .valid_o(valid_o),
+        .data0_i(caesar_message),
+        .valid0_i(caesar_valid),
+        .data1_i(scytale_message),
+        .valid1_i(scytale_valid),
+        .data2_i(zigzag_message),
+        .valid2_i(zigzag_valid)
     );
 
     caesar_decryption cd(

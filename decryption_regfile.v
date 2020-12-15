@@ -120,7 +120,6 @@ module decryption_regfile #(
                     // Set rdata to the contents of the zigzag register if read is HIGH
                     // If read is LOW, we can set it to 0 or leave it as is, as read
                     // is basically an enable signal for rdata
-                    $display("ZigZag Register address detected");
                     rdata <= (read) ? zigzag_key : 0;
 
                     // Set the contents of the zigzag register to be the contents

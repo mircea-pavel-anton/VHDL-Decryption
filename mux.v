@@ -25,6 +25,7 @@
 //                  - remove redundant ternary operators and leave just the boolean condition itself
 //                  - code cleanup
 // Revision 0.07 - Change all tab indents to space indents
+// Revision 0.08 - Merge multiple reset states into a single one
 //////////////////////////////////////////////////////////////////////////////////
 
 module mux #(
@@ -64,7 +65,7 @@ module mux #(
 
     always @(posedge clk) begin
         // If the reset signal is HIGH, disable all outs
-        if (!rst_n) begin
+        if (!rst_n || select == 2'b11) begin
             data_o <= 0;
             valid_o <= 0;
         end else begin // if reset is LOW
@@ -98,14 +99,6 @@ module mux #(
                 2'b10: begin // see comments above
                     data_o <= (valid2_i) ? data2_i : 0;
                     valid_o <= (valid2_i && !valid_o);
-                end
-                
-                // The [select] signal should never reach this case, but we're
-                // implementing it just to be safe.
-                // If [select] has an invalid value, then disable all outs
-                2'b11: begin
-                    data_o <= 0;
-                    valid_o <= 0;
                 end
             endcase
         end

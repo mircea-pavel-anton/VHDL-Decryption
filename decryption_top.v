@@ -114,7 +114,7 @@ module decryption_top#(
     );
 
     mux mx(
-        .clk(clk),
+        .clk(clk_sys),
         .rst_n(rst_n),
         .select(mux_select[1:0]),
         .data_o(data_o),
@@ -128,7 +128,7 @@ module decryption_top#(
     );
 
     caesar_decryption cd(
-        .clk(clk),
+        .clk(clk_sys),
         .rst_n(rst_n),
         .data_i(caesar_data_i),
         .valid_i(caesar_valid_i),
@@ -139,7 +139,7 @@ module decryption_top#(
     );
 
     scytale_decryption sd(
-        .clk(clk),
+        .clk(clk_sys),
         .rst_n(rst_n),
         .data_i(scytale_data_i),
         .valid_i(scytale_valid_i),
@@ -151,7 +151,7 @@ module decryption_top#(
     );
 
     zigzag_decryption zd(
-        .clk(clk),
+        .clk(clk_sys),
         .rst_n(rst_n),
         .data_i(zigzag_data_i),
         .valid_i(zigzag_valid_i),

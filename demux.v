@@ -29,6 +29,7 @@
 //               - ( i tried to reverse engineer the signals from the ref modul
 //                 e by looking at the waves)
 // Revision 0.10 - Change Logic Overview to match new architecture
+// Revision 0.11 - Add missing condition to data_&valid_o assignments
 //////////////////////////////////////////////////////////////////////////////////
 
 module demux #(
@@ -92,14 +93,14 @@ module demux #(
         if (rst_n) begin // if(!reset)
             case (state) // fsm start
                 2'b00: begin // State 1: print 3rd character
-                    data0_o  = (select == 2'b00) ? stored_data[23:16] : 0;
-                    valid0_o = (select == 2'b00) ? 1 : 0;
+                    data0_o  = (select == 2'b00 && stored_data != 0) ? stored_data[23:16] : 0;
+                    valid0_o = (select == 2'b00 && stored_data != 0) ? 1 : 0;
 
-                    data1_o  = (select == 2'b01) ? stored_data[23:16] : 0;
-                    valid1_o = (select == 2'b01) ? 1 : 0;
+                    data1_o  = (select == 2'b01 && stored_data != 0) ? stored_data[23:16] : 0;
+                    valid1_o = (select == 2'b01 && stored_data != 0) ? 1 : 0;
 
-                    data2_o  = (select == 2'b10) ? stored_data[23:16] : 0;
-                    valid2_o = (select == 2'b10) ? 1 : 0;
+                    data2_o  = (select == 2'b10 && stored_data != 0) ? stored_data[23:16] : 0;
+                    valid2_o = (select == 2'b10 && stored_data != 0) ? 1 : 0;
 
                     // if we are receiveing an input or if we haven't finished
                     // outputting the previous one
@@ -108,27 +109,27 @@ module demux #(
                 end
 
                 2'b01: begin // State 2: print 2nd character
-                    data0_o  = (select == 2'b00) ? stored_data[15:8] : 0;
-                    valid0_o = (select == 2'b00) ? 1 : 0;
+                    data0_o  = (select == 2'b00 && stored_data != 0) ? stored_data[15:8] : 0;
+                    valid0_o = (select == 2'b00 && stored_data != 0) ? 1 : 0;
 
-                    data1_o  = (select == 2'b01) ? stored_data[15:8] : 0;
-                    valid1_o = (select == 2'b01) ? 1 : 0;
+                    data1_o  = (select == 2'b01 && stored_data != 0) ? stored_data[15:8] : 0;
+                    valid1_o = (select == 2'b01 && stored_data != 0) ? 1 : 0;
 
-                    data2_o  = (select == 2'b10) ? stored_data[15:8] : 0;
-                    valid2_o = (select == 2'b10) ? 1 : 0;
+                    data2_o  = (select == 2'b10 && stored_data != 0) ? stored_data[15:8] : 0;
+                    valid2_o = (select == 2'b10 && stored_data != 0) ? 1 : 0;
 
                     state <= state + 2'b01; // go to next state
                 end
                 
                 2'b10: begin // State 3: print 1st character & read input
-                    data0_o  = (select == 2'b00) ? stored_data[7:0] : 0;
-                    valid0_o = (select == 2'b00) ? 1 : 0;
+                    data0_o  = (select == 2'b00 && stored_data != 0) ? stored_data[7:0] : 0;
+                    valid0_o = (select == 2'b00 && stored_data != 0) ? 1 : 0;
 
-                    data1_o  = (select == 2'b01) ? stored_data[7:0] : 0;
-                    valid1_o = (select == 2'b01) ? 1 : 0;
+                    data1_o  = (select == 2'b01 && stored_data != 0) ? stored_data[7:0] : 0;
+                    valid1_o = (select == 2'b01 && stored_data != 0) ? 1 : 0;
 
-                    data2_o  = (select == 2'b10) ? stored_data[7:0] : 0;
-                    valid2_o = (select == 2'b10) ? 1 : 0;
+                    data2_o  = (select == 2'b10 && stored_data != 0) ? stored_data[7:0] : 0;
+                    valid2_o = (select == 2'b10 && stored_data != 0) ? 1 : 0;
 
                     stored_data <= (valid_i) ? data_i : 0; // store input in reg
                     
@@ -136,14 +137,14 @@ module demux #(
                 end
                 
                 2'b11: begin // State 4: print 4th character
-                    data0_o  = (select == 2'b00) ? stored_data[31:24] : 0;
-                    valid0_o = (select == 2'b00) ? 1 : 0;
+                    data0_o  = (select == 2'b00 && stored_data != 0) ? stored_data[31:24] : 0;
+                    valid0_o = (select == 2'b00 && stored_data != 0) ? 1 : 0;
 
-                    data1_o  = (select == 2'b01) ? stored_data[31:24] : 0;
-                    valid1_o = (select == 2'b01) ? 1 : 0;
+                    data1_o  = (select == 2'b01 && stored_data != 0) ? stored_data[31:24] : 0;
+                    valid1_o = (select == 2'b01 && stored_data != 0) ? 1 : 0;
 
-                    data2_o  = (select == 2'b10) ? stored_data[31:24] : 0;
-                    valid2_o = (select == 2'b10) ? 1 : 0;
+                    data2_o  = (select == 2'b10 && stored_data != 0) ? stored_data[31:24] : 0;
+                    valid2_o = (select == 2'b10 && stored_data != 0) ? 1 : 0;
                     
                     state <= state + 2'b01; // go to first state (overflow 2bit reg)
                 end

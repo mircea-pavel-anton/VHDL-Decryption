@@ -267,3 +267,47 @@ always @(posedge clk) begin
     endcase
 end
 ```
+
+## Demux
+
+This block handles routing the input message from the master device to the appropriate decryption block.
+
+The `select` signal comes from the register bank.
+
+Due to the fact that the master device works on a 4 times slower clock, the input data to the demux is 32 bits wide, and it splits it into 4 8-bit packets. Those packets all get routed in the immedate following 4 clock cycles (system clock, not master clock), even if another message is received.
+
+To implement this functionality, a FSM was modelled.
+
+![fsm](./src/fsm.png)
+
+What basically happens is that state 1 is held continuously until `valid_i` goes to `HIGH`. From that point, the next 2 clock cycles are basically idle, printing a null character (since `stored_data` is 0). State 3 ensures that state 4 has `data_i` inside `stored_data` and basically state 4 begins the printing cycle, going from char 4 to char 1. The cycle ends when `valid_i` is `LOW` and `stored_data` is 0.
+
+## Mux
+
+This block is basically the reverse of the demux block. While the demux block made sure that each decryption block had the appropriate inputs, this mux block ensures that the correct output si routed to the "system" `data_o`. Each decryption block output is an input to the mux, along side the `valid_o`. The select comes, again, from the register bank, just like it did for the demux.
+The `data_o` and `valid_o` signals are then routed accordingly.
+
+This basic 'switching' logic is easily implemented with a `case` and some ternary operators:
+
+``` Verilog
+case (select)
+    2'b00: begin
+        data_o <= (valid0_i) ? data0_i : 0;
+        valid_o <= (valid0_i);
+    end
+    
+    2'b01: begin
+        data_o <= (valid1_i) ? data1_i : 0;
+        valid_o <= (valid1_i);
+    end
+    
+    2'b10: begin
+        data_o <= (valid2_i) ? data2_i : 0;
+        valid_o <= (valid2_i);
+    end
+endcase
+```
+
+## Top
+
+This bit of code simply instantiates all the modules defined above, and assigns the system `busy` port to be `HIGH` if either one of the `busy` ports from caesar, scytale or zigzag. No point in copy-pasting code here. Have a [hyperlink](./decryption_top.v).

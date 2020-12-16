@@ -82,7 +82,7 @@ module zigzag_decryption #(
             // if we have not yet reached the end of the message, store each
             // letter into [message]
             // Note that message will have the string stored backwards
-            if (data_i != START_DECRYPTION_TOKEN) begin
+            if (data_i != START_DECRYPTION_TOKEN && !busy) begin
                 message[D_WIDTH * n +: D_WIDTH] <= data_i;
                 n <= n + 1'b1; // increment the character counter
             end else begin // if we have reached the end of the message

@@ -26,6 +26,7 @@
 //                  - code cleanup
 // Revision 0.07 - Change all tab indents to space indents
 // Revision 0.08 - Merge multiple reset states into a single one
+// Revision 0.09 - Fix switching valid_o behaviour due to stupid if condition
 //////////////////////////////////////////////////////////////////////////////////
 
 module mux #(
@@ -88,17 +89,17 @@ module mux #(
                     // HIGH and [valid_o] is LOW, it toggles it from
                     // LOW to HIGH and then back from HIGH to LOW in
                     // 2 clock cycles
-                    valid_o <= (valid0_i && !valid_o);
+                    valid_o <= (valid0_i);
                 end
                 
                 2'b01: begin // see comments above
                     data_o <= (valid1_i) ? data1_i : 0;
-                    valid_o <= (valid1_i && !valid_o);
+                    valid_o <= (valid1_i);
                 end
                 
                 2'b10: begin // see comments above
                     data_o <= (valid2_i) ? data2_i : 0;
-                    valid_o <= (valid2_i && !valid_o);
+                    valid_o <= (valid2_i);
                 end
             endcase
         end

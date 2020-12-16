@@ -28,6 +28,7 @@
 // Revision 0.09 - Migrate to a 4 state FSM structure
 //               - ( i tried to reverse engineer the signals from the ref modul
 //                 e by looking at the waves)
+// Revision 0.10 - Change Logic Overview to match new architecture
 //////////////////////////////////////////////////////////////////////////////////
 
 module demux #(
@@ -56,18 +57,33 @@ module demux #(
         output reg [SYS_DWIDTH - 1 : 0]     data2_o,    // ZigZag Dec. Output
         output reg                          valid2_o    // ZigZag Dec. Enable
     );
-	/////////////////////////// LOGIC OVERVIEW ///////////////////////////
-	//    On the positive edge of [master_clock]:                       //
-	//        if the input is enabled ([valid_i] is HIGH):              //
-	//            store [data_i] into a variable (32 bits)              //
-	//                                                                  //
-	//    On the positive edge of [system_clock]:                       //
-	//        if the input is disabled AND the stored data is not null: //
-	//            send an 8bit packet to the apropriate output          //
-	//            set the apropriate output-enable signal to HIGH       //
-	//            set the other output-enable signals to LOW            //
-	//            make sure to only do this for 4 clock cycles          //
-	//////////////////////////////////////////////////////////////////////
+    /////////////////////////// LOGIC OVERVIEW ///////////////////////////
+    // There are a few considerations to take into account:             //
+    //  1. The 4 character wide message (32bit wide) has to be sent     //
+    //      in reverse order on the data_o lines                        //
+    //  2. We have to 'anticipate' the output by 1cc                    //
+    //  3. All *mux logic is implemented via ternary operators, like se://
+    //      data0_o  = (select == 2'b00) ? stored_data[23:16] : 0;      //
+    //      valid0_o = (select == 2'b00) ? 1 : 0;                       //
+    //                                                                  //
+    //  I tried to model a FSM, with the 4 following states:            //
+    //      State 1: print the 3rd character of the stored data         //
+    //      State 2: print the 2nd character of the stored data         //
+    //      State 3: print the first character of the stored data       //
+    //               renew stored data                                  //
+    //      State 4: print the 4th character of the stored data         //
+    //                                                                  //
+    // The way i envsioned this to work, is:                            //
+    //  -  state 1 will be continuously held until valid_i goes high    //
+    //  - from there, states 1 and 2 are basically null, as             //
+    //      stored data is 0, so they dont print anything               //
+    //  - state 3 will store the actual  message, that should have been //
+    //      saved on the posedge of clk_mst, and prints nothing (again) //
+    //  - state 4 is the "first" one in terms of output.                //
+    //      It starts the printing process at the last character, and   //
+    //      all following states proceed step by step towards the       //
+    //      first.                                                      //
+    //////////////////////////////////////////////////////////////////////
 
     reg [MST_DWIDTH - 1 : 0] stored_data = 0;
     reg [1:0] state = 2'b00;

@@ -1,6 +1,14 @@
-# Tema 2 - Decryption
+# Decryption
 
-## Decryption Regfile
+A small decryption module, written in Verilog, as a university assignment.
+
+It can decrypt the following cyphers:
+  - caesar cypher
+  - scytale cypher
+  - zigzag cypher/rail-fence cypher (for `key=2` or `key=3`)
+
+## Modules Overview
+### Decryption Regfile
 
 This block acts like both a memory and a memory controller.
 
@@ -17,7 +25,7 @@ There are 2 more signals of interest:
 - `done`, which basically acts like an enable signal for all outs
 - `error` which indicates an unavailable address in `addr`
 
-### Inputs
+#### Inputs
 
 ``` verilog
 input clk       // system clock
@@ -30,7 +38,7 @@ input                        write // basically a write_enable signal
 input [reg_width - 1 : 0]    wdata // the written data
 ```
 
-### Outputs
+#### Outputs
 
 ``` verilog
 output reg [reg_width - 1 : 0]  rdata   // the read data
@@ -48,7 +56,7 @@ output reg [reg_width - 1 : 0] zigzag_key   // The key needed to decrypt the
                                             // zigzag message
 ```
 
-## Caesar Decryption
+### Caesar Decryption
 
 This algorithm basically shifts all characters to the right, and that's it.
 
@@ -66,7 +74,7 @@ if (rst_n) begin
 end 
 ```
 
-## Scytale Decryption
+### Scytale Decryption
 
 This algorithm involves writing the given string into a `M`x`N` matrix, row by row and then reading line by line.
 
@@ -123,13 +131,13 @@ end
 // see the code for a more in depth explanation
 ```
 
-## ZigZag Decryption
+### ZigZag Decryption
 
 This algorithm involves writing the decrypted message in a zigzag fashion inside a matrix with a given number of rows, and then reading the message line by line to get the encryption.
 
 We're going to treat two distinct cases, one for `key==2` and one for `key==3`.
 
-### Key == 2
+#### Key == 2
 
 By performing a basic decryption with a pen on paper, for `n=8`, we get the following:
 
@@ -185,7 +193,7 @@ end
 // see the code for a more in depth explanation
 ```
 
-### Key = 3
+#### Key = 3
 
 By performing a basic decryption with a pen on paper, for `n=18`, we get the following:
 
@@ -268,7 +276,7 @@ always @(posedge clk) begin
 end
 ```
 
-## Demux
+### Demux
 
 This block handles routing the input message from the master device to the appropriate decryption block.
 
@@ -282,7 +290,7 @@ To implement this functionality, a FSM was modelled.
 
 What basically happens is that state 1 is held continuously until `valid_i` goes to `HIGH`. From that point, the next 2 clock cycles are basically idle, printing a null character (since `stored_data` is 0). State 3 ensures that state 4 has `data_i` inside `stored_data` and basically state 4 begins the printing cycle, going from char 4 to char 1. The cycle ends when `valid_i` is `LOW` and `stored_data` is 0.
 
-## Mux
+### Mux
 
 This block is basically the reverse of the demux block. While the demux block made sure that each decryption block had the appropriate inputs, this mux block ensures that the correct output si routed to the "system" `data_o`. Each decryption block output is an input to the mux, along side the `valid_o`. The select comes, again, from the register bank, just like it did for the demux.
 The `data_o` and `valid_o` signals are then routed accordingly.
@@ -308,6 +316,21 @@ case (select)
 endcase
 ```
 
-## Top
+### Top
 
 This bit of code simply instantiates all the modules defined above, and assigns the system `busy` port to be `HIGH` if either one of the `busy` ports from caesar, scytale or zigzag. No point in copy-pasting code here. Have a [hyperlink](./decryption_top.v).
+
+## What I learned
+1. Some of the quirks of VHDL programming
+2. How to manage combinational and sequencial logic blocks
+3. How to model for loops inside a clocked sequencial block via mimicking FSMs
+4. What the scytale and zigzag cyphers are, :))
+5. How to link up multiple modules to create a more complex project
+
+## Feedback, suggestions and help
+
+For feedback, suggestions, bug reports etc., feel free to e-mail me at 'mike.anth99@gmail.com'.
+
+---
+
+_a project by Mircea-Pavel Anton (Mike Anthony)_

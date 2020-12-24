@@ -1,4 +1,4 @@
-# Decryption
+# VHDL-Decryption
 
 A small decryption module, written in Verilog, as a university assignment.
 
